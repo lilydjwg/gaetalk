@@ -1,0 +1,15 @@
+application: lilydjwg # that's the *** part in ***.appspost.com.
+version: test
+runtime: python
+api_version: 1
+
+handlers:
+- url: /_ah/xmpp/.*
+  script: chatmain.py
+- url: /_test/memcache
+  script: memcachetest.py
+
+inbound_services:
+- xmpp_message
+- xmpp_presence
+- xmpp_subscribe

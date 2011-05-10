@@ -8,6 +8,7 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
 import lilytalk
+import config
 
 class XMPPSub(webapp.RequestHandler):
   '''被人加好友了～可能被触发多次'''
@@ -39,7 +40,8 @@ class XMPPAvail(webapp.RequestHandler):
     show = self.request.get('show')
     logging.debug(u'%s 的状态: %s (%s)' % (jid, status, show))
     show = lilytalk.STATUS_CODE[show]
-    xmpp.send_presence(jid, status=lilytalk.notice)
+    xmpp.send_presence(self.request.get('from'),
+      status=lilytalk.notice, from_jid='%s@appspot.com/bot' % config.appid)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
       u.avail = show

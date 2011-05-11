@@ -6,6 +6,7 @@
 import re
 import logging
 import datetime
+import utils
 from google.appengine.ext import db
 from google.appengine.api import xmpp
 
@@ -159,4 +160,11 @@ class BasicCommand:
       if c.startswith('do_'):
         doc.append(u'%s: %s' % (c[3:], f.__doc__.decode('utf-8')))
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
+
+  def do_iam(self, args=None):
+    '''查看自己的信息'''
+    s = self.sender
+    r = u'昵称：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
+      s.nick, s.msg_count, utils.filesize(s.msg_chars), s.prefix, s.intro)
+    self.msg.reply(r.encode('utf-8'))
 

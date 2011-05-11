@@ -46,6 +46,7 @@ class User(db.Model):
 
   prefix = db.StringProperty(required=True, default='//')
   nick_pattern = db.StringProperty(required=True, default='[%s]')
+  intro = db.StringProperty()
 
 def get_user_by_jid(jid):
   return User.gql('where jid = :1', jid).get()

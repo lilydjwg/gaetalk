@@ -17,6 +17,7 @@ class XMPPSub(webapp.RequestHandler):
     u = lilytalk.get_user_by_jid(jid)
     if u is None:
       lilytalk.add_user(jid)
+      lilytalk.log_onoff(u, lilytalk.NEW)
 
 class XMPPUnsub(webapp.RequestHandler):
   def post(self):
@@ -24,6 +25,7 @@ class XMPPUnsub(webapp.RequestHandler):
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
       u.delete()
+      lilytalk.log_onoff(u, lilytalk.LEAVE)
       lilytalk.send_to_all(u'%s 已经离开' % jid)
       logging.info(u'%s 已经离开' % jid)
 
@@ -44,12 +46,16 @@ class XMPPAvail(webapp.RequestHandler):
       status=lilytalk.notice, from_jid='%s@appspot.com/bot' % config.appid)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
-      u.avail = show
-      u.last_online_date = datetime.datetime.now()
-      u.put()
+      if u.avail != show:
+        u.avail = show
+        u.last_online_date = datetime.datetime.now()
+        u.put()
+        lilytalk.log_onoff(u, show)
     else:
       logging.info(u'Adding %s (%s)', jid, show)
+      lilytalk.log_onoff(u, lilytalk.NEW)
       lilytalk.add_user(jid, show)
+      lilytalk.log_onoff(u, show)
 
 class XMPPUnavail(webapp.RequestHandler):
   def post(self):
@@ -58,9 +64,11 @@ class XMPPUnavail(webapp.RequestHandler):
     logging.info(u'%s 下线了' % jid)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
-      u.avail = lilytalk.OFFLINE
-      u.last_offline_date = datetime.datetime.now()
-      u.put()
+      if u.avail != lilytalk.OFFLINE:
+        u.avail = lilytalk.OFFLINE
+        u.last_offline_date = datetime.datetime.now()
+        u.put()
+        lilytalk.log_onoff(u, lilytalk.OFFLINE)
 
 application = webapp.WSGIApplication(
   [

@@ -19,6 +19,8 @@ XAWAY   = u'离开'
 BUSY    = u'忙碌'
 ONLINE  = u'在线'
 CHAT    = u'和我说话吧'
+NEW     = u'加入'
+LEAVE   = u'退出'
 STATUS_CODE = {
   '':     ONLINE,
   'away': AWAY,
@@ -48,6 +50,24 @@ class User(db.Model):
   prefix = db.StringProperty(required=True, default='//')
   nick_pattern = db.StringProperty(required=True, default='[%s]')
   intro = db.StringProperty()
+
+class Log(db.Model):
+  time = db.DateTimeProperty(auto_now_add=True)
+  msg = db.StringProperty(required=True)
+  jid = db.StringProperty()
+  nick = db.StringProperty()
+  type = db.StringProperty(required=True,
+                           choices=set(['chat', 'member', 'admin']))
+
+def log_msg(sender, msg):
+  l = Log(jid=sender.jid, nick=guess_nick(sender),
+          type='chat', msg=msg)
+  l.put()
+
+def log_onoff(sender, action):
+  l = Log(jid=sender.jid, nick=guess_nick(sender),
+          type='member', msg=action)
+  l.put()
 
 def get_user_by_jid(jid):
   return User.gql('where jid = :1', jid).get()
@@ -90,11 +110,12 @@ def handle_message(msg):
       sender.msg_count = 1
       sender.msg_chars = len(msg.body)
     sender.put()
-    msg = '%s %s' % (
+    message = '%s %s' % (
       sender.nick_pattern % guess_nick(sender),
       msg.body
     )
-    send_to_all_except_self(sender.jid, msg)
+    send_to_all_except_self(sender.jid, message)
+    log_msg(sender, msg.body)
 
 def add_user(jid, show=OFFLINE):
   u = User(jid=jid, avail=show)

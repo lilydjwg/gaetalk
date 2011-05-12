@@ -68,6 +68,12 @@ class XMPPUnavail(webapp.RequestHandler):
         u.put()
         lilytalk.log_onoff(u, lilytalk.OFFLINE)
 
+class XMPPProbe(webapp.RequestHandler):
+  def post(self):
+    fulljid = self.request.get('from')
+    xmpp.send_presence(self.request.get('from'),
+      status=lilytalk.notice, from_jid='%s@appspot.com/bot' % config.appid)
+
 application = webapp.WSGIApplication(
   [
     ('/_ah/xmpp/subscription/subscribed/', XMPPSub),
@@ -75,6 +81,7 @@ application = webapp.WSGIApplication(
     ('/_ah/xmpp/message/chat/', XMPPMsg),
     ('/_ah/xmpp/presence/available/', XMPPAvail),
     ('/_ah/xmpp/presence/unavailable/', XMPPUnavail),
+    ('/_ah/xmpp/presence/probe/', XMPPProbe),
   ],
   debug=True)
 

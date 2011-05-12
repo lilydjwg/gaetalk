@@ -42,7 +42,7 @@ class XMPPAvail(webapp.RequestHandler):
     logging.debug(u'%s 的状态: %s (%s)' % (jid, status, show))
     show = lilytalk.STATUS_CODE[show]
     xmpp.send_presence(self.request.get('from'),
-      status=lilytalk.notice, from_jid='%s@appspot.com/bot' % config.appid)
+      status=lilytalk.notice)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
       if u.avail != show:
@@ -72,7 +72,7 @@ class XMPPProbe(webapp.RequestHandler):
   def post(self):
     fulljid = self.request.get('from')
     xmpp.send_presence(self.request.get('from'),
-      status=lilytalk.notice, from_jid='%s@appspot.com/bot' % config.appid)
+      status=lilytalk.notice)
 
 application = webapp.WSGIApplication(
   [

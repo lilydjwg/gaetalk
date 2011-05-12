@@ -61,7 +61,7 @@ class User(db.Model):
 
 class Log(db.Model):
   time = db.DateTimeProperty(auto_now_add=True, indexed=True)
-  msg = db.StringProperty(required=True)
+  msg = db.StringProperty(required=True, multiline=True)
   jid = db.StringProperty()
   nick = db.StringProperty()
   type = db.StringProperty(required=True, indexed=True,
@@ -108,6 +108,9 @@ def handle_message(msg):
     msg.reply('很抱歉，出错了，请重新添加好友。')
     return
   #TODO 管理员命令
+  if len(msg.body) > 500:
+    msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。')
+    return
   ch = BasicCommand(msg, sender)
   if not ch.handled:
     sender.last_speak_date = datetime.datetime.now()
@@ -207,7 +210,7 @@ class BasicCommand:
     self.msg.reply(r.encode('utf-8'))
 
   def do_old(self, args):
-    '''查询聊天记录，默认为最后100条或者所有离线时消息'''
+    '''查询聊天记录，可选一个数字参数。默认为最后100条或者所有离线时消息'''
     s = self.sender
     q = False
     if not args:

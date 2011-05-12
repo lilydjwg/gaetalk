@@ -1,0 +1,6 @@
+indexes:
+- kind: Log
+  properties:
+  - name: type
+  - name: time
+    direction: desc

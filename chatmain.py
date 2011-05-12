@@ -17,7 +17,6 @@ class XMPPSub(webapp.RequestHandler):
     u = lilytalk.get_user_by_jid(jid)
     if u is None:
       lilytalk.add_user(jid)
-      lilytalk.log_onoff(u, lilytalk.NEW)
 
 class XMPPUnsub(webapp.RequestHandler):
   def post(self):
@@ -26,7 +25,7 @@ class XMPPUnsub(webapp.RequestHandler):
     if u is not None:
       u.delete()
       lilytalk.log_onoff(u, lilytalk.LEAVE)
-      lilytalk.send_to_all(u'%s 已经离开' % jid)
+      lilytalk.send_to_all(u'%s 已经离开' % jid.split('@')[0])
       logging.info(u'%s 已经离开' % jid)
 
 class XMPPMsg(webapp.RequestHandler):
@@ -53,7 +52,6 @@ class XMPPAvail(webapp.RequestHandler):
         lilytalk.log_onoff(u, show)
     else:
       logging.info(u'Adding %s (%s)', jid, show)
-      lilytalk.log_onoff(u, lilytalk.NEW)
       lilytalk.add_user(jid, show)
       lilytalk.log_onoff(u, show)
 

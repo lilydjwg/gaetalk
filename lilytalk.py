@@ -128,8 +128,9 @@ def handle_message(msg):
 def add_user(jid, show=OFFLINE):
   u = User(jid=jid, avail=show)
   u.put()
+  log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
-  send_to_all_except_self(jid, u'%s 已经加入' % jid)
+  send_to_all_except_self(jid, u'%s 已经加入' % jid.split('@')[0])
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入～' % jid.split('@')[0])
 

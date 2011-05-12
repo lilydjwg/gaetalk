@@ -6,9 +6,12 @@
 import re
 import logging
 import datetime
-import utils
+
 from google.appengine.ext import db
 from google.appengine.api import xmpp
+
+import utils
+import config
 
 notice = u'本群正在内部测试中……'
 helpre = re.compile(r'^\W{0,2}help$')
@@ -31,6 +34,8 @@ STATUS_CODE = {
   'xa':   XAWAY,
   'chat': CHAT,
 }
+
+timezone = datetime.timedelta(hours=config.timezoneoffset)
 
 class User(db.Model):
   jid = db.StringProperty(required=True, indexed=True)
@@ -55,11 +60,11 @@ class User(db.Model):
   intro = db.StringProperty()
 
 class Log(db.Model):
-  time = db.DateTimeProperty(auto_now_add=True)
+  time = db.DateTimeProperty(auto_now_add=True, indexed=True)
   msg = db.StringProperty(required=True)
   jid = db.StringProperty()
   nick = db.StringProperty()
-  type = db.StringProperty(required=True,
+  type = db.StringProperty(required=True, indexed=True,
                            choices=set(['chat', 'member', 'admin']))
 
 def log_msg(sender, msg):
@@ -128,9 +133,16 @@ def add_user(jid, show=OFFLINE):
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入～' % jid.split('@')[0])
 
+def strftime(time):
+  '''将时间转换为字符串，考虑时区，可能带日期'''
+  if datetime.date.today() == time.date():
+    format = '%H:%M:%S'
+  else:
+    format = '%m:%d %H:%M:%S'
+  return (time + timezone).strftime(format)
+
 class BasicCommand:
   handled = True
-
   def __init__(self, msg, sender):
     self.sender = sender
     self.msg = msg
@@ -186,10 +198,40 @@ class BasicCommand:
         doc.append(u'%s: %s' % (c[3:], f.__doc__.decode('utf-8')))
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
 
-  def do_iam(self, args=None):
+  def do_iam(self, args):
     '''查看自己的信息'''
     s = self.sender
     r = u'昵称：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
       s.nick, s.msg_count, utils.filesize(s.msg_chars), s.prefix, s.intro)
     self.msg.reply(r.encode('utf-8'))
+
+  def do_old(self, args):
+    '''查询聊天记录，默认为最后100条或者所有离线时消息'''
+    s = self.sender
+    q = False
+    if not args:
+      q = Log.gql("WHERE time < :1 AND time > :2 AND type = 'chat' ORDER BY time DESC LIMIT 100", s.last_online_date, s.last_offline_date)
+    elif len(args) == 1:
+      try:
+        n = int(args[0])
+        if n > 0:
+          q = Log.gql("WHERE type = 'chat' ORDER BY time DESC LIMIT %d" % n)
+      except ValueError:
+        pass
+    if q is not False:
+      r = []
+      for l in q:
+        message = '%s %s %s' % (
+          strftime(l.time),
+          s.nick_pattern % l.nick,
+          l.msg
+        )
+        r.append(message)
+      r.reverse()
+      if r:
+        self.msg.reply(u'\n'.join(r).encode('utf-8'))
+      else:
+        self.msg.reply('没有符合的聊天记录。')
+    else:
+      self.msg.reply('Oops, 参数不正确哦。')
 

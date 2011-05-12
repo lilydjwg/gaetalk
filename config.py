@@ -2,4 +2,5 @@
 # vim:fileencoding=utf-8
 
 appid = 'lilydjwg'
+timezoneoffset = 8
 

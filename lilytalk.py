@@ -19,8 +19,11 @@ XAWAY   = u'离开'
 BUSY    = u'忙碌'
 ONLINE  = u'在线'
 CHAT    = u'和我说话吧'
+
 NEW     = u'加入'
 LEAVE   = u'退出'
+NICK    = u'昵称更改 (%s -> %s)'
+
 STATUS_CODE = {
   '':     ONLINE,
   'away': AWAY,
@@ -173,6 +176,7 @@ class BasicCommand:
       send_to_all_except_self(self.sender.jid,
         (u'%s 的昵称改成了 %s' % (old_nick, args[0])).encode('utf-8'))
       self.msg.reply('昵称更改成功！')
+      log_onoff(self.sender, NICK % (old_nick, args[0]))
 
   def do_help(self, args=None):
     '''显示本帮助'''

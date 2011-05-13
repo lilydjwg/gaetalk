@@ -173,7 +173,7 @@ class BasicCommand:
 
   def do_online(self, args):
     '''显示在线成员列表'''
-    r = [u'在线成员列表:']
+    r = []
     l = User.gql('where avail != :1', OFFLINE)
     for u in l:
       m = guess_nick(u)
@@ -181,6 +181,8 @@ class BasicCommand:
       if status != u'在线':
         m += u' (%s)' % status
       r.append(unicode('* ' + m))
+    r.sort()
+    r.insert(0, u'在线成员列表:')
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_nick(self, args):

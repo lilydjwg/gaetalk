@@ -159,6 +159,8 @@ class BasicCommand:
         logging.debug('did command: ' + msg.body)
       except AttributeError:
         msg.reply(u'错误：未知命令 %s' % cmd[0])
+      except IndexError:
+        msg.reply(u'错误：无命令')
       except UnicodeEncodeError:
         msg.reply(u'错误：命令名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
     else:

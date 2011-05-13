@@ -136,6 +136,7 @@ def add_user(jid, show=OFFLINE):
   send_to_all_except_self(jid, u'%s 已经加入' % jid.split('@')[0])
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入～' % jid.split('@')[0])
+  return u
 
 class BasicCommand:
   handled = True

@@ -39,7 +39,7 @@ timezone = datetime.timedelta(hours=config.timezoneoffset)
 
 class User(db.Model):
   jid = db.StringProperty(required=True, indexed=True)
-  nick = db.StringProperty(indexed=True)
+  nick = db.StringProperty(required=True, indexed=True)
 
   add_date = db.DateTimeProperty(auto_now_add=True)
   last_online_date = db.DateTimeProperty()
@@ -70,7 +70,7 @@ class Log(db.Model):
                            choices=set(['chat', 'member', 'admin']))
 
 def log_msg(sender, msg):
-  l = Log(jid=sender.jid, nick=guess_nick(sender),
+  l = Log(jid=sender.jid, nick=sender.nick,
           type='chat', msg=msg)
   l.put()
 
@@ -79,7 +79,7 @@ def log_onoff(sender, action, resource=''):
     msg = '%s (%s)' % (action, resource)
   else:
     msg = action
-  l = Log(jid=sender.jid, nick=guess_nick(sender),
+  l = Log(jid=sender.jid, nick=sender.nick,
           type='member', msg=msg)
   l.put()
 
@@ -92,9 +92,6 @@ def get_member_list():
   for u in l:
     r.append(unicode(u.jid))
   return r
-
-def guess_nick(u):
-  return u.nick or u.jid.split('@')[0].decode('utf-8')
 
 def send_to_all_except_self(jid, message):
   jids = [x for x in get_member_list() if x != jid]
@@ -128,7 +125,7 @@ def handle_message(msg):
       sender.msg_chars = len(msg.body)
     sender.put()
     message = '%s %s' % (
-      sender.nick_pattern % guess_nick(sender),
+      sender.nick_pattern % sender.nick,
       msg.body
     )
     send_to_all_except_self(sender.jid, message)
@@ -136,7 +133,12 @@ def handle_message(msg):
 
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
-  u = User(jid=jid, avail=show)
+  nick = jid.split('@')[0]
+  old = User.gql('where nick = :1', nick).get()
+  while old:
+    nick += '_'
+    old = User.gql('where nick = :1', nick).get()
+  u = User(jid=jid, avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()
   if resource:
@@ -144,9 +146,9 @@ def add_user(jid, show=OFFLINE, resource=''):
   u.put()
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
-  send_to_all_except_self(jid, u'%s 已经加入' % jid.split('@')[0])
+  send_to_all_except_self(jid, u'%s 已经加入' % u.nick)
   xmpp.send_presence(jid, status=notice)
-  xmpp.send_message(jid, u'欢迎 %s 加入～' % jid.split('@')[0])
+  xmpp.send_message(jid, u'欢迎 %s 加入～' % u.nick)
   return u
 
 class BasicCommand:
@@ -176,7 +178,7 @@ class BasicCommand:
     r = []
     l = User.gql('where avail != :1', OFFLINE)
     for u in l:
-      m = guess_nick(u)
+      m = u.nick
       status = u.avail
       if status != u'在线':
         m += u' (%s)' % status
@@ -195,7 +197,7 @@ class BasicCommand:
     if q is not None:
       self.msg.reply('错误：该昵称已被使用，请使用其它昵称')
     else:
-      old_nick = guess_nick(self.sender)
+      old_nick = self.sender.nick
       log_onoff(self.sender, NICK % (old_nick, args[0]))
       self.sender.nick = args[0]
       self.sender.put()

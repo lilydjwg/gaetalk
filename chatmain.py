@@ -25,7 +25,7 @@ class XMPPUnsub(webapp.RequestHandler):
     if u is not None:
       u.delete()
       lilytalk.log_onoff(u, lilytalk.LEAVE)
-      lilytalk.send_to_all(u'%s 已经离开' % jid.split('@')[0])
+      lilytalk.send_to_all(u'%s 已经离开' % u.nick)
       logging.info(u'%s 已经离开' % jid)
 
 class XMPPMsg(webapp.RequestHandler):
@@ -85,14 +85,20 @@ class XMPPProbe(webapp.RequestHandler):
     xmpp.send_presence(self.request.get('from'),
       status=lilytalk.notice)
 
+class XMPPDummy(webapp.RequestHandler):
+  def post(self):
+    pass
+
 application = webapp.WSGIApplication(
   [
     ('/_ah/xmpp/subscription/subscribed/', XMPPSub),
-    ('/_ah/xmpp/subscription/unsubscribe/', XMPPUnsub),
+    ('/_ah/xmpp/subscription/unsubscribed/', XMPPUnsub),
     ('/_ah/xmpp/message/chat/', XMPPMsg),
     ('/_ah/xmpp/presence/available/', XMPPAvail),
     ('/_ah/xmpp/presence/unavailable/', XMPPUnavail),
     ('/_ah/xmpp/presence/probe/', XMPPProbe),
+    ('/_ah/xmpp/subscription/subscribe/', XMPPDummy),
+    ('/_ah/xmpp/subscription/unsubscribe/', XMPPDummy),
   ],
   debug=True)
 

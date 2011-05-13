@@ -30,8 +30,11 @@ class XMPPUnsub(webapp.RequestHandler):
 
 class XMPPMsg(webapp.RequestHandler):
   def post(self):
-    message = xmpp.Message(self.request.POST)
-    lilytalk.handle_message(message)
+    try:
+      message = xmpp.Message(self.request.POST)
+      lilytalk.handle_message(message)
+    except xmpp.InvalidMessageError:
+      logging.warn('InvalidMessageError: %r' % self.request.POST)
 
 class XMPPAvail(webapp.RequestHandler):
   def post(self):

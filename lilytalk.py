@@ -149,6 +149,7 @@ class BasicCommand:
       cmd = msg.body[len(sender.prefix):].split()
       try:
         getattr(self, 'do_' + cmd[0])(cmd[1:])
+        logging.debug('did command: ' + msg.body)
       except AttributeError:
         msg.reply(u'错误：未知命令 %s' % cmd[0])
       except UnicodeEncodeError:

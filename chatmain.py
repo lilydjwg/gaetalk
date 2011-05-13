@@ -48,15 +48,21 @@ class XMPPAvail(webapp.RequestHandler):
       status=lilytalk.notice)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
+      modified = False
+      if resource not in u.resources:
+        u.resources.append(resource)
+        modified = True
       if u.avail != show:
         u.avail = show
         u.last_online_date = datetime.datetime.now()
+        modified = True
+      lilytalk.log_onoff(u, show, resource)
+      if modified:
         u.put()
-        lilytalk.log_onoff(u, show)
     else:
       logging.info(u'Adding %s (%s)', jid, show)
       u = lilytalk.add_user(jid, show)
-      lilytalk.log_onoff(u, show)
+      lilytalk.log_onoff(u, show, resource)
 
 class XMPPUnavail(webapp.RequestHandler):
   def post(self):
@@ -65,11 +71,13 @@ class XMPPUnavail(webapp.RequestHandler):
     logging.info(u'%s 下线了' % jid)
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
-      if u.avail != lilytalk.OFFLINE:
-        u.avail = lilytalk.OFFLINE
-        u.last_offline_date = datetime.datetime.now()
+      if resource in u.resources:
+        u.resources.remove(resource)
+        if u.avail != lilytalk.OFFLINE:
+          u.avail = lilytalk.OFFLINE
+          u.last_offline_date = datetime.datetime.now()
         u.put()
-        lilytalk.log_onoff(u, lilytalk.OFFLINE)
+      lilytalk.log_onoff(u, lilytalk.OFFLINE, resource)
 
 class XMPPProbe(webapp.RequestHandler):
   def post(self):

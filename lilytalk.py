@@ -45,6 +45,7 @@ class User(db.Model):
   last_online_date = db.DateTimeProperty()
   last_offline_date = db.DateTimeProperty()
   last_speak_date = db.DateTimeProperty()
+
   msg_count = db.IntegerProperty(required=True, default=0)
   msg_chars = db.IntegerProperty(required=True, default=0)
   black_minutes = db.IntegerProperty(required=True, default=0)
@@ -54,6 +55,7 @@ class User(db.Model):
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
   blocked = db.BooleanProperty(required=True, default=False)
+  resources = db.StringListProperty(required=True)
 
   prefix = db.StringProperty(required=True, default='//')
   nick_pattern = db.StringProperty(required=True, default='[%s]')
@@ -72,9 +74,13 @@ def log_msg(sender, msg):
           type='chat', msg=msg)
   l.put()
 
-def log_onoff(sender, action):
+def log_onoff(sender, action, resource=''):
+  if resource:
+    msg = '%s (%s)' % (action, resource)
+  else:
+    msg = action
   l = Log(jid=sender.jid, nick=guess_nick(sender),
-          type='member', msg=action)
+          type='member', msg=msg)
   l.put()
 
 def get_user_by_jid(jid):

@@ -194,12 +194,12 @@ class BasicCommand:
       self.msg.reply('错误：该昵称已被使用，请使用其它昵称')
     else:
       old_nick = guess_nick(self.sender)
+      log_onoff(self.sender, NICK % (old_nick, args[0]))
       self.sender.nick = args[0]
       self.sender.put()
       send_to_all_except_self(self.sender.jid,
         (u'%s 的昵称改成了 %s' % (old_nick, args[0])).encode('utf-8'))
       self.msg.reply('昵称更改成功！')
-      log_onoff(self.sender, NICK % (old_nick, args[0]))
 
   def do_help(self, args=None):
     '''显示本帮助'''

@@ -137,14 +137,6 @@ def add_user(jid, show=OFFLINE):
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入～' % jid.split('@')[0])
 
-def strftime(time):
-  '''将时间转换为字符串，考虑时区，可能带日期'''
-  if datetime.date.today() == time.date():
-    format = '%H:%M:%S'
-  else:
-    format = '%m:%d %H:%M:%S'
-  return (time + timezone).strftime(format)
-
 class BasicCommand:
   handled = True
   def __init__(self, msg, sender):
@@ -224,14 +216,20 @@ class BasicCommand:
         pass
     if q is not False:
       r = []
+      q = list(q)
+      q.reverse()
+      if q:
+        if (datetime.datetime.today() + timezone).date() == (q[0].time + timezone).date():
+          show_date = False
+        else:
+          show_date = True
       for l in q:
         message = '%s %s %s' % (
-          strftime(l.time),
+          utils.strftime(l.time, timezone, show_date),
           s.nick_pattern % l.nick,
           l.msg
         )
         r.append(message)
-      r.reverse()
       if r:
         self.msg.reply(u'\n'.join(r).encode('utf-8'))
       else:

@@ -16,3 +16,10 @@ def filesize(size):
       left = -left
     return '%.1f%siB' % (left, units[unit])
 
+def strftime(time, timezone, show_date=False):
+  '''将时间转换为字符串，考虑时区，可能带日期'''
+  if not show_date:
+    format = '%H:%M:%S'
+  else:
+    format = '%m-%d %H:%M:%S'
+  return (time + timezone).strftime(format)

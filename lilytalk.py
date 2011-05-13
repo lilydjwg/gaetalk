@@ -218,18 +218,21 @@ class BasicCommand:
     self.msg.reply(r.encode('utf-8'))
 
   def do_old(self, args):
-    '''查询聊天记录，可选一个数字参数。默认为最后100条或者所有离线时消息'''
+    '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFF 显示离线消息（最多 100 条）'''
     s = self.sender
     q = False
     if not args:
-      q = Log.gql("WHERE time < :1 AND time > :2 AND type = 'chat' ORDER BY time DESC LIMIT 100", s.last_online_date, s.last_offline_date)
+      q = Log.gql("WHERE type = 'chat' ORDER BY time DESC LIMIT 20")
     elif len(args) == 1:
       try:
         n = int(args[0])
         if n > 0:
           q = Log.gql("WHERE type = 'chat' ORDER BY time DESC LIMIT %d" % n)
       except ValueError:
-        pass
+        if args[0] == 'OFF':
+          q = Log.gql("WHERE time < :1 AND time > :2 AND type = 'chat' ORDER BY time DESC LIMIT 100", s.last_online_date, s.last_offline_date)
+        else:
+          pass
     if q is not False:
       r = []
       q = list(q)

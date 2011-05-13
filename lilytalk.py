@@ -134,8 +134,13 @@ def handle_message(msg):
     send_to_all_except_self(sender.jid, message)
     log_msg(sender, msg.body)
 
-def add_user(jid, show=OFFLINE):
+def add_user(jid, show=OFFLINE, resource=''):
+  '''resource 在 presence type 为 available 里使用'''
   u = User(jid=jid, avail=show)
+  if show != OFFLINE:
+    u.last_online_date = datetime.datetime.now()
+  if resource:
+    u.resources.append(resource)
   u.put()
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)

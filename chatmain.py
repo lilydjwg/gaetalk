@@ -61,7 +61,7 @@ class XMPPAvail(webapp.RequestHandler):
         u.put()
     else:
       logging.info(u'Adding %s (%s)', jid, show)
-      u = lilytalk.add_user(jid, show)
+      u = lilytalk.add_user(jid, show, resource)
       lilytalk.log_onoff(u, show, resource)
 
 class XMPPUnavail(webapp.RequestHandler):

@@ -8,6 +8,9 @@ handlers:
   script: chatmain.py
 - url: /_test/memcache
   script: memcachetest.py
+- url: /_admin/clean.*
+  script: clean.py
+  login: admin
 
 inbound_services:
 - xmpp_message

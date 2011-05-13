@@ -193,6 +193,7 @@ class BasicCommand:
     for c, f in self.__class__.__dict__.items():
       if c.startswith('do_'):
         doc.append(u'%s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+    doc.append(u'要离开，直接删掉好友即可。')
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
 
   def do_iam(self, args):

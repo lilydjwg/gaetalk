@@ -148,7 +148,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   logging.info(u'%s 已经加入' % jid)
   send_to_all_except_self(jid, u'%s 已经加入' % u.nick)
   xmpp.send_presence(jid, status=notice)
-  xmpp.send_message(jid, u'欢迎 %s 加入～' % u.nick)
+  xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 help' % u.nick)
   return u
 
 class BasicCommand:
@@ -163,7 +163,7 @@ class BasicCommand:
       cmd = msg.body[len(sender.prefix):].split()
       try:
         getattr(self, 'do_' + cmd[0])(cmd[1:])
-        logging.debug('did command: ' + msg.body)
+        logging.debug('%s did command %s' % (sender.jid, msg.body))
       except AttributeError:
         msg.reply(u'错误：未知命令 %s' % cmd[0])
       except IndexError:
@@ -207,10 +207,10 @@ class BasicCommand:
 
   def do_help(self, args=None):
     '''显示本帮助'''
-    doc = [u'命令指南 (使用时请加上你的命令前缀，默认为 // )']
+    doc = [u'命令指南 (使用时请加上命令前缀 %s)' % self.sender.prefix]
     for c, f in self.__class__.__dict__.items():
       if c.startswith('do_'):
-        doc.append(u'%s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+        doc.append(u'* %s: %s' % (c[3:], f.__doc__.decode('utf-8')))
     doc.append(u'要离开，直接删掉好友即可。')
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
 

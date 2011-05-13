@@ -73,7 +73,7 @@ class XMPPUnavail(webapp.RequestHandler):
     if u is not None:
       if resource in u.resources:
         u.resources.remove(resource)
-        if u.avail != lilytalk.OFFLINE:
+        if not u.resources:
           u.avail = lilytalk.OFFLINE
           u.last_offline_date = datetime.datetime.now()
         u.put()

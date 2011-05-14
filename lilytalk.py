@@ -234,7 +234,7 @@ class BasicCommand:
       return
     else:
       try:
-        n = int(args[0])
+        n = utils.parseTime(args[0])
       except ValueError:
         self.msg.reply('Sorry，我无法理解你说的时间。')
 

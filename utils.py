@@ -1,6 +1,16 @@
 #!/usr/bin/env python2
 # vim:fileencoding=utf-8
 
+import re
+timeParser = re.compile(r'^(\d+)([smhd])?$')
+timeUnitMap = {
+  '':  1,
+  's': 1,
+  'm': 60,
+  'h': 3600,
+  'd': 86400,
+}
+
 def filesize(size):
   '''将 数字 转化为 xxKiB 的形式'''
   units = 'KMGT'
@@ -23,3 +33,12 @@ def strftime(time, timezone, show_date=False):
   else:
     format = '%m-%d %H:%M:%S'
   return (time + timezone).strftime(format)
+
+def parseTime(s):
+  '''将 3s，5d，1h，6m 等转换成秒数'''
+  m = timeParser.match(s)
+  if m is None:
+    raise ValueError('not a time')
+  n = int(m.group(1))
+  u = m.group(2)
+  return n * timeUnitMap[u]

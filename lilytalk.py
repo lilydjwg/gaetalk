@@ -222,7 +222,7 @@ class BasicCommand:
     self.msg.reply(r.encode('utf-8'))
 
   def do_old(self, args):
-    '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFF 显示离线消息（最多 100 条）'''
+    '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE 显示离线消息（最多 100 条）'''
     s = self.sender
     q = False
     if not args:
@@ -233,7 +233,7 @@ class BasicCommand:
         if n > 0:
           q = Log.gql("WHERE type = 'chat' ORDER BY time DESC LIMIT %d" % n)
       except ValueError:
-        if args[0] == 'OFF':
+        if args[0].upper() == 'OFFLINE':
           q = Log.gql("WHERE time < :1 AND time > :2 AND type = 'chat' ORDER BY time DESC LIMIT 100", s.last_online_date, s.last_offline_date)
         else:
           pass

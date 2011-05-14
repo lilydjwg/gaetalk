@@ -2,6 +2,8 @@
 # vim:fileencoding=utf-8
 
 import re
+import unicodedata
+
 timeParser = re.compile(r'^(\d+)([smhd])?$')
 timeUnitMap = {
   '':  1,
@@ -42,3 +44,10 @@ def parseTime(s):
   n = int(m.group(1))
   u = m.group(2)
   return n * timeUnitMap[u]
+
+def checkNick(nick):
+  '''判断一个昵称是否合法'''
+  for i in nick:
+    if not unicodedata.category(i).startswith('L'):
+      return False
+  return True

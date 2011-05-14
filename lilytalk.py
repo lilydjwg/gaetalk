@@ -239,6 +239,8 @@ class BasicCommand:
     q = User.gql('where nick = :1', args[0]).get()
     if q is not None:
       self.msg.reply('错误：该昵称已被使用，请使用其它昵称')
+    elif not utils.checkNick(args[0]):
+      self.msg.reply('错误：非法的昵称')
     else:
       old_nick = self.sender.nick
       log_onoff(self.sender, NICK % (old_nick, args[0]))

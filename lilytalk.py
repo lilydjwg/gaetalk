@@ -25,6 +25,7 @@ NEW     = u'加入'
 LEAVE   = u'退出'
 NICK    = u'昵称更改 (%s -> %s)'
 SNOOZE  = u'snooze %ds'
+BLACK   = u'禁言 %ds'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -50,7 +51,7 @@ class User(db.Model):
   credit = db.IntegerProperty(required=True, default=0)
 
   black_before = db.DateTimeProperty(auto_now_add=True)
-  snooze_before = db.DateTimeProperty(auto_now_add=True)
+  snooze_before = db.DateTimeProperty()
 
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
@@ -93,7 +94,8 @@ def get_member_list():
   l = User.gql('where avail != :1', OFFLINE)
   for u in l:
     r.append(u)
-  return [unicode(x.jid) for x in r if x.snooze_before < now]
+  return [unicode(x.jid) for x in r \
+          if x.snooze_before is None or x.snooze_before < now]
 
 def send_to_all_except_self(jid, message):
   jids = [x for x in get_member_list() if x != jid]
@@ -119,8 +121,27 @@ def handle_message(msg):
   ch = BasicCommand(msg, sender)
   if not ch.handled:
     now = datetime.datetime.now()
+    if sender.black_before is not None \
+       and sender.black_before > now:
+      if (datetime.datetime.today()+timezone).date() == \
+         (sender.black_before+timezone).date():
+        format = '%H时%M分%S秒'
+      else:
+        format = '%m月%d日 %H时%M分%S秒'
+      msg.reply('你已被禁言至 ' \
+                + (sender.black_before+timezone).strftime(format))
+      return
+
+    if sender.last_speak_date is not None \
+       and now - sender.last_speak_date < datetime.timedelta(seconds=1):
+      msg.reply('刷屏啊？禁言一分钟！')
+      log_onoff(sender, BLACK % 60)
+      sender.black_before = now + datetime.timedelta(seconds=60)
+      sender.put()
+      return
+
     sender.last_speak_date = now
-    sender.snooze_before = now
+    sender.snooze_before = None
     try:
       sender.msg_count += 1
       sender.msg_chars += len(msg.body)

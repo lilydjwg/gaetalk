@@ -145,9 +145,12 @@ def handle_message(msg):
         else:
           sender.flooding_point = 0
 
-        k = sender.flooding_point / 1000
+        k = sender.flooding_point / 1500
         if k > 0:
           msg.reply('刷屏啊？禁言 %d 分钟！' % k)
+          send_to_all_except_self(sender.jid,
+            (u'%s 已因刷屏而被禁言 %d 分钟。' % (sender.nick, k)) \
+                                  .encode('utf-8'))
           log_onoff(sender, BLACK % (60 * k))
           sender.black_before = now + datetime.timedelta(seconds=60*k)
           sender.put()

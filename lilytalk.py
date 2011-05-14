@@ -52,6 +52,7 @@ class User(db.Model):
 
   black_before = db.DateTimeProperty(auto_now_add=True)
   snooze_before = db.DateTimeProperty()
+  flooding_point = db.IntegerProperty(default=0)
 
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
@@ -132,13 +133,25 @@ def handle_message(msg):
                 + (sender.black_before+timezone).strftime(format))
       return
 
-    if sender.last_speak_date is not None \
-       and now - sender.last_speak_date < datetime.timedelta(seconds=1):
-      msg.reply('刷屏啊？禁言一分钟！')
-      log_onoff(sender, BLACK % 60)
-      sender.black_before = now + datetime.timedelta(seconds=60)
-      sender.put()
-      return
+    if sender.last_speak_date is not None:
+      d = now - sender.last_speak_date
+      t = d.seconds
+      if d.days > 0 or t > 60:
+        sender.flooding_point = 0
+      else:
+        k = 1000 / (t * t)
+        if k > 0:
+          sender.flooding_point += k
+        else:
+          sender.flooding_point = 0
+
+        k = sender.flooding_point / 1000
+        if k > 0:
+          msg.reply('刷屏啊？禁言 %d 分钟！' % k)
+          log_onoff(sender, BLACK % (60 * k))
+          sender.black_before = now + datetime.timedelta(seconds=60*k)
+          sender.put()
+          return
 
     sender.last_speak_date = now
     sender.snooze_before = None

@@ -56,8 +56,8 @@ class XMPPAvail(webapp.RequestHandler):
         u.avail = show
         u.last_online_date = datetime.datetime.now()
         modified = True
-      lilytalk.log_onoff(u, show, resource)
       if modified:
+        lilytalk.log_onoff(u, show, resource)
         u.put()
     else:
       logging.info(u'Adding %s (%s)', jid, show)

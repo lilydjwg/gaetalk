@@ -162,14 +162,16 @@ class BasicCommand:
     elif msg.body.startswith(sender.prefix):
       cmd = msg.body[len(sender.prefix):].split()
       try:
-        getattr(self, 'do_' + cmd[0])(cmd[1:])
-        logging.debug('%s did command %s' % (sender.jid, msg.body))
+        handle = getattr(self, 'do_' + cmd[0])
       except AttributeError:
         msg.reply(u'错误：未知命令 %s' % cmd[0])
       except IndexError:
         msg.reply(u'错误：无命令')
       except UnicodeEncodeError:
         msg.reply(u'错误：命令名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
+      else:
+        handle(cmd[1:])
+        logging.debug('%s did command %s' % (sender.jid, msg.body))
     else:
       self.handled = False
 

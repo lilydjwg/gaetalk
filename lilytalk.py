@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 # vim:fileencoding=utf-8
 
-#FIXME 会有两个不同的资源
-
 import re
 import logging
 import datetime
@@ -26,6 +24,7 @@ CHAT    = u'和我说话吧'
 NEW     = u'加入'
 LEAVE   = u'退出'
 NICK    = u'昵称更改 (%s -> %s)'
+SNOOZE  = u'snooze %ds'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -48,9 +47,10 @@ class User(db.Model):
 
   msg_count = db.IntegerProperty(required=True, default=0)
   msg_chars = db.IntegerProperty(required=True, default=0)
-  black_minutes = db.IntegerProperty(required=True, default=0)
-  snooze_minutes = db.IntegerProperty(required=True, default=0)
   credit = db.IntegerProperty(required=True, default=0)
+
+  black_before = db.DateTimeProperty(auto_now_add=True)
+  snooze_before = db.DateTimeProperty(auto_now_add=True)
 
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
@@ -88,10 +88,12 @@ def get_user_by_jid(jid):
 
 def get_member_list():
   r = []
+  now = datetime.datetime.now()
+  #一个查询中最多只能有一个不等比较
   l = User.gql('where avail != :1', OFFLINE)
   for u in l:
-    r.append(unicode(u.jid))
-  return r
+    r.append(u)
+  return [unicode(x.jid) for x in r if x.snooze_before < now]
 
 def send_to_all_except_self(jid, message):
   jids = [x for x in get_member_list() if x != jid]
@@ -116,7 +118,9 @@ def handle_message(msg):
     return
   ch = BasicCommand(msg, sender)
   if not ch.handled:
-    sender.last_speak_date = datetime.datetime.now()
+    now = datetime.datetime.now()
+    sender.last_speak_date = now
+    sender.snooze_before = now
     try:
       sender.msg_count += 1
       sender.msg_chars += len(msg.body)
@@ -222,6 +226,22 @@ class BasicCommand:
     r = u'昵称：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
       s.nick, s.msg_count, utils.filesize(s.msg_chars), s.prefix, s.intro)
     self.msg.reply(r.encode('utf-8'))
+
+  def do_snooze(self, args):
+    '''暂停接收消息，参数为时间（默认单位为秒）。再次发送消息时自动清除'''
+    if len(args) != 1:
+      self.msg.reply('你想停止接收消息多久？')
+      return
+    else:
+      try:
+        n = int(args[0])
+      except ValueError:
+        self.msg.reply('Sorry，我无法理解你说的时间。')
+
+    self.sender.snooze_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
+    self.sender.put()
+    self.msg.reply('OK，停止接收消息 %d 秒。' % n)
+    log_onoff(self.sender, SNOOZE % n)
 
   def do_old(self, args):
     '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE 显示离线消息（最多 100 条）'''

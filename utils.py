@@ -43,7 +43,10 @@ def parseTime(s):
     raise ValueError('not a time')
   n = int(m.group(1))
   u = m.group(2)
-  return n * timeUnitMap[u]
+  if u is None:
+    return n
+  else:
+    return n * timeUnitMap[u]
 
 def checkNick(nick):
   '''判断一个昵称是否合法'''

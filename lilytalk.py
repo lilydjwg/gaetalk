@@ -281,6 +281,7 @@ class BasicCommand:
         n = utils.parseTime(args[0])
       except ValueError:
         self.msg.reply('Sorry，我无法理解你说的时间。')
+        return
 
     self.sender.snooze_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
     self.sender.put()

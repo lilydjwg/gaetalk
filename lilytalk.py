@@ -219,12 +219,17 @@ class BasicCommand:
   def do_online(self, args):
     '''显示在线成员列表'''
     r = []
+    now = datetime.datetime.now()
     l = User.gql('where avail != :1', OFFLINE)
     for u in l:
       m = u.nick
       status = u.avail
       if status != u'在线':
         m += u' (%s)' % status
+      if u.snooze_before is not None and u.snooze_before > now:
+        m += u' (snoozing)'
+      if u.black_before is not None and u.black_before > now:
+        m += u' (已禁言)'
       r.append(unicode('* ' + m))
     r.sort()
     r.insert(0, u'在线成员列表:')

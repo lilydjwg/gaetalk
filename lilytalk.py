@@ -21,11 +21,12 @@ BUSY    = u'忙碌'
 ONLINE  = u'在线'
 CHAT    = u'和我说话吧'
 
-NEW     = u'加入'
-LEAVE   = u'退出'
-NICK    = u'昵称更改 (%s -> %s)'
-SNOOZE  = u'snooze %ds'
-BLACK   = u'禁言 %ds'
+NEW        = u'加入'
+LEAVE      = u'退出'
+NICK       = u'昵称更改 (%s -> %s)'
+SNOOZE     = u'snooze %ds'
+BLACK      = u'禁言 %s %ds'
+BLACK_AUTO = u'被禁言 %ds'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -88,6 +89,9 @@ def log_onoff(sender, action, resource=''):
 def get_user_by_jid(jid):
   return User.gql('where jid = :1', jid).get()
 
+def get_user_by_nick(nick):
+  return User.gql('where nick = :1', nick).get()
+
 def get_member_list():
   r = []
   now = datetime.datetime.now()
@@ -98,8 +102,11 @@ def get_member_list():
   return [unicode(x.jid) for x in r \
           if x.snooze_before is None or x.snooze_before < now]
 
-def send_to_all_except_self(jid, message):
-  jids = [x for x in get_member_list() if x != jid]
+def send_to_all_except(jid, message):
+  if isinstance(jid, str):
+    jids = [x for x in get_member_list() if x != jid]
+  else:
+    jids = [x for x in get_member_list() if x not in jid]
   logging.debug(jids)
   try:
     xmpp.send_message(jids, message)
@@ -119,7 +126,10 @@ def handle_message(msg):
   if len(msg.body) > 500:
     msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。')
     return
-  ch = BasicCommand(msg, sender)
+  if sender.is_admin:
+    ch = AdminCommand(msg, sender)
+  else:
+    ch = BasicCommand(msg, sender)
   if not ch.handled:
     now = datetime.datetime.now()
     if sender.black_before is not None \
@@ -148,10 +158,10 @@ def handle_message(msg):
         k = sender.flooding_point / 1500
         if k > 0:
           msg.reply('刷屏啊？禁言 %d 分钟！' % k)
-          send_to_all_except_self(sender.jid,
+          send_to_all_except(sender.jid,
             (u'%s 已因刷屏而被禁言 %d 分钟。' % (sender.nick, k)) \
                                   .encode('utf-8'))
-          log_onoff(sender, BLACK % (60 * k))
+          log_onoff(sender, BLACK_AUTO % (60 * k))
           sender.black_before = now + datetime.timedelta(seconds=60*k)
           sender.put()
           return
@@ -169,7 +179,7 @@ def handle_message(msg):
       sender.nick_pattern % sender.nick,
       msg.body
     )
-    send_to_all_except_self(sender.jid, message)
+    send_to_all_except(sender.jid, message)
     log_msg(sender, msg.body)
 
 def add_user(jid, show=OFFLINE, resource=''):
@@ -187,7 +197,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   u.put()
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
-  send_to_all_except_self(jid, u'%s 已经加入' % u.nick)
+  send_to_all_except(jid, u'%s 已经加入' % u.nick)
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 help' % u.nick)
   return u
@@ -251,16 +261,22 @@ class BasicCommand:
       log_onoff(self.sender, NICK % (old_nick, args[0]))
       self.sender.nick = args[0]
       self.sender.put()
-      send_to_all_except_self(self.sender.jid,
+      send_to_all_except(self.sender.jid,
         (u'%s 的昵称改成了 %s' % (old_nick, args[0])).encode('utf-8'))
       self.msg.reply('昵称更改成功！')
 
   def do_help(self, args=None):
     '''显示本帮助'''
-    doc = [u'命令指南 (使用时请加上命令前缀 %s)' % self.sender.prefix]
+    doc = []
     for c, f in self.__class__.__dict__.items():
       if c.startswith('do_'):
         doc.append(u'* %s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+    for b in self.__class__.__bases__:
+      for c, f in b.__dict__.items():
+        if c.startswith('do_'):
+          doc.append(u'* %s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+    doc.sort()
+    doc.insert(0, u'命令指南 (使用时请加上命令前缀 %s)' % self.sender.prefix)
     doc.append(u'要离开，直接删掉好友即可。')
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
 
@@ -327,3 +343,29 @@ class BasicCommand:
     else:
       self.msg.reply('Oops, 参数不正确哦。')
 
+class AdminCommand(BasicCommand):
+  def do_quiet(self, args):
+    '''禁言某人，参数为昵称和时间（默认单位秒）'''
+    if len(args) != 2:
+      self.msg.reply('请给出昵称和时间。')
+      return
+    else:
+      try:
+        n = utils.parseTime(args[1])
+      except ValueError:
+        self.msg.reply('Sorry，我无法理解你说的时间。')
+        return
+
+    target = get_user_by_nick(args[0])
+    if target is None:
+      self.msg.reply('Sorry，查无此人。')
+      return
+
+    target.black_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
+    target.put()
+    self.msg.reply((u'OK，禁言 %s %d 秒。' % (target.nick, n)).encode('utf-8'))
+    send_to_all_except((self.sender.jid, target.jid),
+                       (u'%s 已被禁言 %s 秒。' % (self.sender.nick, n)) \
+                       .encode('utf-8'))
+    xmpp.send_message(target.jid, u'你已被管理员禁言 %d 秒。' % n)
+    log_onoff(self.sender, BLACK % (target.nick, n))

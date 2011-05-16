@@ -11,6 +11,13 @@ handlers:
 - url: /_admin/clean.*
   script: clean.py
   login: admin
+- url: /
+  static_files: README.html
+  upload: README.html
+- url: /css
+  static_dir: css
+- url: /img
+  static_dir: img
 
 inbound_services:
 - xmpp_message

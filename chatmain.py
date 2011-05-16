@@ -58,8 +58,9 @@ class XMPPAvail(webapp.RequestHandler):
         u.resources.append(resource)
         modified = True
       if u.avail != show:
+        if u.avail == lilytalk.OFFLINE:
+          u.last_online_date = datetime.datetime.now()
         u.avail = show
-        u.last_online_date = datetime.datetime.now()
         modified = True
       if modified:
         lilytalk.log_onoff(u, show, resource)

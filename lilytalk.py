@@ -185,6 +185,21 @@ def handle_message(msg):
     send_to_all_except(sender.jid, message)
     log_msg(sender, msg.body)
 
+def try_add_user(jid, show=OFFLINE, resource=''):
+  '''使用 memcache 作为锁添加用户'''
+  L = utils.MemLock('add_user')
+  L.require()
+  try:
+    u = get_user_by_jid(jid)
+    if u is not None:
+      return
+    u = add_user(jid, show, resource)
+  finally:
+    L.release()
+  if show != OFFLINE:
+    log_onoff(u, show, resource)
+  logging.info(u'%s added', jid)
+
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
   nick = jid.split('@')[0]

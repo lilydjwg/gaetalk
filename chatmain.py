@@ -9,24 +9,29 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 
 import lilytalk
 import config
+import utils
 
 class XMPPSub(webapp.RequestHandler):
   '''被人加好友了～可能被触发多次'''
   def post(self):
     jid = self.request.get('from')
     u = lilytalk.get_user_by_jid(jid)
-    if u is None:
-      lilytalk.add_user(jid)
+    lilytalk.try_add_user(jid)
 
 class XMPPUnsub(webapp.RequestHandler):
   def post(self):
     jid = self.request.get('from')
-    u = lilytalk.get_user_by_jid(jid)
-    if u is not None:
-      lilytalk.log_onoff(u, lilytalk.LEAVE)
-      lilytalk.send_to_all(u'%s 已经离开' % u.nick)
-      u.delete()
-      logging.info(u'%s 已经离开' % jid)
+    L = utils.MemLock('delete_user')
+    L.require()
+    try:
+      u = lilytalk.get_user_by_jid(jid)
+      if u is not None:
+        lilytalk.log_onoff(u, lilytalk.LEAVE)
+        lilytalk.send_to_all(u'%s 已经离开' % u.nick)
+        u.delete()
+        logging.info(u'%s 已经离开' % jid)
+    finally:
+      L.release()
 
 class XMPPMsg(webapp.RequestHandler):
   def post(self):
@@ -60,9 +65,7 @@ class XMPPAvail(webapp.RequestHandler):
         lilytalk.log_onoff(u, show, resource)
         u.put()
     else:
-      logging.info(u'Adding %s (%s)', jid, show)
-      u = lilytalk.add_user(jid, show, resource)
-      lilytalk.log_onoff(u, show, resource)
+      lilytalk.try_add_user(jid, show, resource)
 
 class XMPPUnavail(webapp.RequestHandler):
   def post(self):

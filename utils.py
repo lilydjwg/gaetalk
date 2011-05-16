@@ -3,6 +3,9 @@
 
 import re
 import unicodedata
+import time
+
+from google.appengine.api import memcache
 
 timeParser = re.compile(r'^(\d+)([smhd])?$')
 timeUnitMap = {
@@ -54,3 +57,15 @@ def checkNick(nick):
     if not unicodedata.category(i).startswith('L'):
       return False
   return True
+
+class MemLock:
+  def __init__(self, name):
+    self.name = name
+
+  def require(self):
+    while memcache.get(self.name):
+      time.sleep(0.001)
+    memcache.set(self.name, True)
+
+  def release(self):
+    memcache.set(self.name, False)

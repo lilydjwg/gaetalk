@@ -287,6 +287,24 @@ class BasicCommand:
       s.nick, s.msg_count, utils.filesize(s.msg_chars), s.prefix, s.intro)
     self.msg.reply(r.encode('utf-8'))
 
+  def do_m(self, args):
+    '''给某人发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。'''
+    if len(args) < 2:
+      self.msg.reply('请给出昵称和内容。')
+      return
+
+    target = get_user_by_nick(args[0])
+    if target is None:
+      self.msg.reply('Sorry，查无此人。')
+      return
+
+    msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+    msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
+    if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
+      self.msg.reply(u'OK')
+    else:
+      self.msg.reply(u'消息发送失败')
+
   def do_snooze(self, args):
     '''暂停接收消息，参数为时间（默认单位为秒）。再次发送消息时自动清除'''
     if len(args) != 1:

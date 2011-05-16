@@ -23,9 +23,9 @@ class XMPPUnsub(webapp.RequestHandler):
     jid = self.request.get('from')
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
-      u.delete()
       lilytalk.log_onoff(u, lilytalk.LEAVE)
       lilytalk.send_to_all(u'%s 已经离开' % u.nick)
+      u.delete()
       logging.info(u'%s 已经离开' % jid)
 
 class XMPPMsg(webapp.RequestHandler):

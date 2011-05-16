@@ -122,7 +122,6 @@ def handle_message(msg):
   if sender is None:
     msg.reply('很抱歉，出错了，请重新添加好友。')
     return
-  #TODO 管理员命令
   if msg.body.startswith('?OTR:'):
     msg.reply('不支持 OTR 加密！')
     return

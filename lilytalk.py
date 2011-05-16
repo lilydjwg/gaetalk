@@ -275,11 +275,11 @@ class BasicCommand:
     doc = []
     for c, f in self.__class__.__dict__.items():
       if c.startswith('do_'):
-        doc.append(u'* %s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+        doc.append(u'* %s:\t%s' % (c[3:], f.__doc__.decode('utf-8')))
     for b in self.__class__.__bases__:
       for c, f in b.__dict__.items():
         if c.startswith('do_'):
-          doc.append(u'* %s: %s' % (c[3:], f.__doc__.decode('utf-8')))
+          doc.append(u'* %s:\t%s' % (c[3:], f.__doc__.decode('utf-8')))
     doc.sort()
     doc.insert(0, u'命令指南 (使用时请加上命令前缀 %s)' % self.sender.prefix)
     doc.append(u'要离开，直接删掉好友即可。')
@@ -372,11 +372,11 @@ class BasicCommand:
       doc = []
       for c, f in self.__class__.__dict__.items():
         if c.startswith('set_'):
-          doc.append(u'* %s: %s' % (c[4:], f.__doc__.decode('utf-8')))
+          doc.append(u'* %s:\t%s' % (c[4:], f.__doc__.decode('utf-8')))
       for b in self.__class__.__bases__:
         for c, f in b.__dict__.items():
           if c.startswith('set_'):
-            doc.append(u'* %s: %s' % (c[4:], f.__doc__.decode('utf-8')))
+            doc.append(u'* %s:\t%s' % (c[4:], f.__doc__.decode('utf-8')))
       doc.sort()
       doc.insert(0, u'设置选项：')
       self.msg.reply(u'\n'.join(doc).encode('utf-8'))

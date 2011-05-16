@@ -242,7 +242,9 @@ class BasicCommand:
         m += u' (已禁言)'
       r.append(unicode('* ' + m))
     r.sort()
+    n = len(r)
     r.insert(0, u'在线成员列表:')
+    r.append(u'共 %d 人在线。' % n)
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_nick(self, args):

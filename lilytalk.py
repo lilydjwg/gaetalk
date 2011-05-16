@@ -273,15 +273,16 @@ class BasicCommand:
   def do_help(self, args=None):
     '''显示本帮助'''
     doc = []
+    prefix = self.sender.prefix
     for c, f in self.__class__.__dict__.items():
       if c.startswith('do_'):
-        doc.append(u'* %s:\t%s' % (c[3:], f.__doc__.decode('utf-8')))
+        doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
     for b in self.__class__.__bases__:
       for c, f in b.__dict__.items():
         if c.startswith('do_'):
-          doc.append(u'* %s:\t%s' % (c[3:], f.__doc__.decode('utf-8')))
+          doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
     doc.sort()
-    doc.insert(0, u'命令指南 (使用时请加上命令前缀 %s)' % self.sender.prefix)
+    doc.insert(0, u'命令指南 (当前命令前缀 %s，可设置)' % prefix)
     doc.append(u'要离开，直接删掉好友即可。')
     self.msg.reply(u'\n'.join(doc).encode('utf-8'))
 

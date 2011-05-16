@@ -363,6 +363,40 @@ class BasicCommand:
     else:
       self.msg.reply('Oops, 参数不正确哦。')
 
+  def do_set(self, args):
+    '''设置一些参数。参数格式 key=value；不带参数以查看说明。'''
+    if len(args) != 1:
+      doc = []
+      for c, f in self.__class__.__dict__.items():
+        if c.startswith('set_'):
+          doc.append(u'* %s: %s' % (c[4:], f.__doc__.decode('utf-8')))
+      for b in self.__class__.__bases__:
+        for c, f in b.__dict__.items():
+          if c.startswith('set_'):
+            doc.append(u'* %s: %s' % (c[4:], f.__doc__.decode('utf-8')))
+      doc.sort()
+      doc.insert(0, u'设置选项：')
+      self.msg.reply(u'\n'.join(doc).encode('utf-8'))
+    else:
+      msg = self.msg
+      cmd = args[0].split('=', 1)
+      try:
+        handle = getattr(self, 'set_' + cmd[0])
+      except AttributeError:
+        msg.reply(u'错误：未知选项 %s' % cmd[0])
+      except IndexError:
+        msg.reply(u'错误：无选项')
+      except UnicodeEncodeError:
+        msg.reply(u'错误：选项名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
+      else:
+        handle(cmd[1])
+
+  def set_prefix(self, arg):
+    '''设置命令前缀'''
+    self.sender.prefix = arg
+    self.sender.put()
+    self.msg.reply(u'设置成功！')
+
 class AdminCommand(BasicCommand):
   def do_quiet(self, args):
     '''禁言某人，参数为昵称和时间（默认单位秒）'''

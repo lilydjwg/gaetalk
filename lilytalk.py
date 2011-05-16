@@ -60,7 +60,7 @@ class User(db.Model):
   blocked = db.BooleanProperty(required=True, default=False)
   resources = db.StringListProperty(required=True)
 
-  prefix = db.StringProperty(required=True, default='//')
+  prefix = db.StringProperty(required=True, default='-')
   nick_pattern = db.StringProperty(required=True, default='[%s]')
   intro = db.StringProperty()
 

@@ -123,6 +123,9 @@ def handle_message(msg):
     msg.reply('很抱歉，出错了，请重新添加好友。')
     return
   #TODO 管理员命令
+  if msg.body.startswith('?OTR:'):
+    msg.reply('不支持 OTR 加密！')
+    return
   if len(msg.body) > 500:
     msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。')
     return

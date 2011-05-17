@@ -60,7 +60,7 @@ class User(db.Model):
   blocked = db.BooleanProperty(required=True, default=False)
   resources = db.StringListProperty(required=True)
 
-  prefix = db.StringProperty(required=True, default='-')
+  prefix = db.StringProperty(required=True, default=config.default_prefix)
   nick_pattern = db.StringProperty(required=True, default='[%s]')
   intro = db.StringProperty()
 
@@ -216,7 +216,8 @@ def add_user(jid, show=OFFLINE, resource=''):
   logging.info(u'%s 已经加入' % jid)
   send_to_all_except(jid, u'%s 已经加入' % u.nick)
   xmpp.send_presence(jid, status=notice)
-  xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 help' % u.nick)
+  xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 %shelp' % (
+    u.prefix, u.nick))
   return u
 
 class BasicCommand:

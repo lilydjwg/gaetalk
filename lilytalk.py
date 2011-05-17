@@ -217,7 +217,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   send_to_all_except(jid, u'%s 已经加入' % u.nick)
   xmpp.send_presence(jid, status=notice)
   xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 %shelp' % (
-    u.prefix, u.nick))
+    u.nick, u.prefix))
   return u
 
 class BasicCommand:

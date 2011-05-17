@@ -340,7 +340,10 @@ class BasicCommand:
 
     self.sender.snooze_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
     self.sender.put()
-    self.msg.reply('OK，停止接收消息 %d 秒。' % n)
+    if n == 0:
+      self.msg.reply('你已经醒来。')
+    else:
+      self.msg.reply('OK，停止接收消息 %d 秒。' % n)
     log_onoff(self.sender, SNOOZE % n)
 
   def do_old(self, args):

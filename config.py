@@ -3,4 +3,5 @@
 
 timezoneoffset = 8
 default_prefix = '-'
+allowedSymbolInNick = u'™'
 

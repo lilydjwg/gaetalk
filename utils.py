@@ -4,6 +4,7 @@
 import re
 import unicodedata
 import time
+import config
 
 from google.appengine.api import memcache
 
@@ -54,7 +55,7 @@ def parseTime(s):
 def checkNick(nick):
   '''判断一个昵称是否合法'''
   for i in nick:
-    if not unicodedata.category(i).startswith('L'):
+    if not unicodedata.category(i).startswith('L') and i not in config.allowedSymbolInNick:
       return False
   return True
 

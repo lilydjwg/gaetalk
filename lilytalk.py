@@ -399,6 +399,9 @@ class BasicCommand:
     else:
       msg = self.msg
       cmd = args[0].split('=', 1)
+      if len(cmd) == 1:
+        msg.reply(u'错误：请给出选项值')
+        return
       try:
         handle = getattr(self, 'set_' + cmd[0])
       except AttributeError:

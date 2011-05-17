@@ -338,7 +338,11 @@ class BasicCommand:
         self.msg.reply('Sorry，我无法理解你说的时间。')
         return
 
-    self.sender.snooze_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
+    try:
+      self.sender.snooze_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
+    except OverflowError:
+      self.msg.reply('Sorry，你不能睡太久。')
+      return
     self.sender.put()
     if n == 0:
       self.msg.reply('你已经醒来。')

@@ -391,6 +391,7 @@ class BasicCommand:
 
   def do_set(self, args):
     '''设置一些参数。参数格式 key=value；不带参数以查看说明。'''
+    #注意：选项名/值中不能包含空格
     if len(args) != 1:
       doc = []
       for c, f in self.__class__.__dict__.items():
@@ -423,6 +424,18 @@ class BasicCommand:
   def set_prefix(self, arg):
     '''设置命令前缀'''
     self.sender.prefix = arg
+    self.sender.put()
+    self.msg.reply(u'设置成功！')
+
+  def set_nickpattern(self, arg):
+    '''设置昵称显示格式，用 %s 表示昵称的位置'''
+    try:
+      arg % 'test'
+    except (TypeError, ValueError):
+      self.msg.reply(u'错误：不正确的格式')
+      return
+
+    self.sender.nick_pattern = arg
     self.sender.put()
     self.msg.reply(u'设置成功！')
 

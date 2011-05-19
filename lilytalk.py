@@ -14,6 +14,7 @@ import config
 notice = u'本群正在内部测试中……'
 helpre = re.compile(r'^\W{0,2}help$')
 
+#用户所有资源离线时，会加上“完全”二字
 OFFLINE = u'离线'
 AWAY    = u'离开'
 XAWAY   = u'离开'
@@ -79,7 +80,10 @@ def log_msg(sender, msg):
 
 def log_onoff(sender, action, resource=''):
   if resource:
-    msg = '%s (%s)' % (action, resource)
+    if action == OFFLINE and not sender.resources:
+      msg = u'完全%s (%s)' % (action, resource)
+    else:
+      msg = '%s (%s)' % (action, resource)
   else:
     msg = action
   l = Log(jid=sender.jid, nick=sender.nick,

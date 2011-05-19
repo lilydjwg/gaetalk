@@ -65,6 +65,8 @@ class XMPPAvail(webapp.RequestHandler):
       if modified:
         lilytalk.log_onoff(u, show, resource)
         u.put()
+      if config.warnGtalk105 and resource.startswith('Talk.v105'):
+        xmpp.send_message(jid, u'您的客户端使用明文传输数据，这样不安全，请使用Gtalk英文版或者其它客户端。')
     else:
       lilytalk.try_add_user(jid, show, resource)
 

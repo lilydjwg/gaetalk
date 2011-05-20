@@ -186,9 +186,10 @@ def handle_message(msg):
       sender.msg_count = 1
       sender.msg_chars = len(msg.body)
     sender.put()
+    body = utils.removelinks(msg.body)
     message = '%s %s' % (
       sender.nick_pattern % sender.nick,
-      msg.body
+      body
     )
     send_to_all_except(sender.jid, message)
     log_msg(sender, msg.body)

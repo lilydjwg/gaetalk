@@ -9,6 +9,8 @@ import config
 from google.appengine.api import memcache
 
 timeParser = re.compile(r'^(\d+)([smhd])?$')
+linkre = re.compile(r' <https?://(?!i.imgur.com/)[^>]+>')
+linkjsre = re.compile(r' <javascript:[^>]+>')
 timeUnitMap = {
   '':  1,
   's': 1,
@@ -58,6 +60,14 @@ def checkNick(nick):
     if not unicodedata.category(i).startswith('L') and i not in config.allowedSymbolInNick:
       return False
   return True
+
+def removelinks(msg):
+  '''清除多余的链接文本'''
+  links = linkre.findall(msg)
+  if len(links) != 1:
+    msg = linkre.sub('', msg)
+  msg = linkjsre.sub('', msg)
+  return msg
 
 class MemLock:
   def __init__(self, name):

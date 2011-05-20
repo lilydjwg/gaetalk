@@ -11,6 +11,9 @@ handlers:
 - url: /_admin/clean.*
   script: clean.py
   login: admin
+- url: /_admin/userdedup
+  script: usermaintainer.py
+  login: admin
 - url: /
   static_files: README.html
   upload: README.html

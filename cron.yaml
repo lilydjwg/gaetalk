@@ -1,0 +1,4 @@
+cron:
+- description: user deduplicate
+  url: /_admin/userdedup
+  schedule: every 24 hours

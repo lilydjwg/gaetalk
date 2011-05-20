@@ -37,6 +37,9 @@ STATUS_CODE = {
   'chat': CHAT,
 }
 
+#状态的排序顺序
+STATUS_LIST = [CHAT, ONLINE, AWAY, XAWAY, BUSY, OFFLINE]
+
 timezone = datetime.timedelta(hours=config.timezoneoffset)
 
 class User(db.Model):
@@ -71,7 +74,7 @@ class Log(db.Model):
   jid = db.StringProperty()
   nick = db.StringProperty()
   type = db.StringProperty(required=True, indexed=True,
-                           choices=set(['chat', 'member', 'admin']))
+                           choices=set(['chat', 'member', 'misc']))
 
 def log_msg(sender, msg):
   l = Log(jid=sender.jid, nick=sender.nick,

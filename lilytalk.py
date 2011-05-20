@@ -114,6 +114,7 @@ def send_to_all_except(jid, message):
     jids = [x for x in get_member_list() if x != jid]
   else:
     jids = [x for x in get_member_list() if x not in jid]
+  logging.debug(jid)
   logging.debug(jids)
   try:
     xmpp.send_message(jids, message)

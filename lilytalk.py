@@ -273,6 +273,20 @@ class BasicCommand:
     r.append(u'共 %d 人在线。' % n)
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
+  def do_chatty(self, args):
+    '''显示成员发送的消息数量'''
+    r = []
+    for u in User.gql('ORDER BY msg_chars ASC'):
+      m = u.nick
+      m = u'* %s:\t%5d条，共 %s' % (
+        u.nick, u.msg_count,
+        utils.filesize(u.msg_chars))
+      r.append(m)
+    n = len(r)
+    r.insert(0, u'消息数量排行:')
+    r.append(u'共 %d 人。' % n)
+    self.msg.reply(u'\n'.join(r).encode('utf-8'))
+
   def do_nick(self, args):
     '''更改昵称，需要一个参数'''
     if len(args) != 1:

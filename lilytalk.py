@@ -28,6 +28,7 @@ NICK       = u'昵称更改 (%s -> %s)'
 SNOOZE     = u'snooze %ds'
 BLACK      = u'禁言 %s %ds'
 BLACK_AUTO = u'被禁言 %ds'
+KICK       = u'删除 %s'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -470,6 +471,26 @@ class BasicCommand:
     self.msg.reply(u'设置成功！')
 
 class AdminCommand(BasicCommand):
+  def do_kick(self, args):
+    '''删除某人。他仍可以重新加入。'''
+    if len(args) != 1:
+      self.msg.reply('请给出昵称。')
+      return
+
+    target = get_user_by_nick(args[0])
+    if target is None:
+      self.msg.reply('Sorry，查无此人。')
+      return
+
+    targetjid = target.jid
+    targetnick = target.nick
+    target.delete()
+    self.msg.reply((u'OK，删除 %s。' % target.nick).encode('utf-8'))
+    send_to_all_except(self.sender.jid, (u'%s 已被删除。' % self.sender.nick) \
+                       .encode('utf-8'))
+    xmpp.send_message(targetjid, u'你已被管理员从此群中删除，请删除该好友。')
+    log_onoff(self.sender, KICK % targetnick)
+
   def do_quiet(self, args):
     '''禁言某人，参数为昵称和时间（默认单位秒）'''
     if len(args) != 2:

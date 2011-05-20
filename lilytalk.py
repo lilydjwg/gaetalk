@@ -11,7 +11,7 @@ from google.appengine.api import xmpp
 import utils
 import config
 
-notice = u'本群正在内部测试中……'
+notice = u'这是一个测试群'
 helpre = re.compile(r'^\W{0,2}help$')
 
 #用户所有资源离线时，会加上“完全”二字

@@ -358,6 +358,14 @@ class BasicCommand:
       self.msg.reply('OK，停止接收消息 %d 秒。' % n)
     log_onoff(self.sender, SNOOZE % n)
 
+  def do_offline(self, args):
+    '''让程序认为你的所有资源已离线。如在你离线时程序仍认为你在线，请使用此命令。'''
+    del self.sender.resources[:]
+    self.sender.avail = OFFLINE
+    self.sender.last_offline_date = datetime.datetime.now()
+    self.sender.put()
+    self.msg.reply('OK，在下次你说你在线之前我都认为你已离线。')
+
   def do_old(self, args):
     '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE 显示离线消息（最多 100 条）'''
     s = self.sender

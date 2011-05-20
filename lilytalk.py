@@ -187,11 +187,17 @@ def handle_message(msg):
       sender.msg_chars = len(msg.body)
     sender.put()
     body = utils.removelinks(msg.body)
-    message = '%s %s' % (
-      sender.nick_pattern % sender.nick,
-      body
-    )
-    send_to_all_except(sender.jid, message)
+    for u in User.gql('where avail != :1', OFFLINE):
+      if u.jid == sender.jid:
+        continue
+      try:
+        message = '%s %s' % (
+          u.nick_pattern % sender.nick,
+          body
+        )
+        xmpp.send_message(u.jid, message)
+      except xmpp.InvalidJidError:
+        pass
     log_msg(sender, msg.body)
 
 def try_add_user(jid, show=OFFLINE, resource=''):

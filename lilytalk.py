@@ -188,6 +188,8 @@ def handle_message(msg):
     sender.put()
     body = utils.removelinks(msg.body)
     for u in User.gql('where avail != :1', OFFLINE):
+      if u.snooze_before is not None and u.snooze_before >= now:
+        continue
       if u.jid == sender.jid:
         continue
       try:

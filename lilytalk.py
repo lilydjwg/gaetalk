@@ -493,6 +493,10 @@ class AdminCommand(BasicCommand):
       self.msg.reply('Sorry，查无此人。')
       return
 
+    if target.jid == config.root:
+      self.msg.reply('不能删除 root 用户')
+      return
+
     targetjid = target.jid
     targetnick = target.nick
     target.delete()

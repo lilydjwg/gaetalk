@@ -64,11 +64,11 @@ class User(db.Model):
 
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
-  blocked = db.BooleanProperty(required=True, default=False)
   resources = db.StringListProperty(required=True)
 
   prefix = db.StringProperty(required=True, default=config.default_prefix)
   nick_pattern = db.StringProperty(required=True, default='[%s]')
+  nick_changed = db.BooleanProperty(required=True, default=False)
   intro = db.StringProperty()
 
 class Log(db.Model):
@@ -311,9 +311,13 @@ class BasicCommand:
     elif not utils.checkNick(args[0]):
       self.msg.reply('错误：非法的昵称')
     else:
+      if not config.nick_can_change and self.sender.nick_changed:
+        self.msg.reply('乖哦，你已经没机会再改昵称了')
+        return
       old_nick = self.sender.nick
       log_onoff(self.sender, NICK % (old_nick, args[0]))
       self.sender.nick = args[0]
+      self.sender.nick_changed = True
       self.sender.put()
       send_to_all_except(self.sender.jid,
         (u'%s 的昵称改成了 %s' % (old_nick, args[0])).encode('utf-8'))

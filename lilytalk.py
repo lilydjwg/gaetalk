@@ -322,6 +322,7 @@ class BasicCommand:
       send_to_all_except(self.sender.jid,
         (u'%s 的昵称改成了 %s' % (old_nick, args[0])).encode('utf-8'))
       self.msg.reply('昵称更改成功！')
+  do_nick.__doc__ += '，最长 %d 字节' % config.nick_maxlen
 
   def do_help(self, args=None):
     '''显示本帮助'''

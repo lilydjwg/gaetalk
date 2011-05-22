@@ -56,6 +56,8 @@ def parseTime(s):
 
 def checkNick(nick):
   '''判断一个昵称是否合法'''
+  if len(nick.encode('utf-8')) > config.nick_maxlen:
+    return False
   for i in nick:
     if not unicodedata.category(i).startswith('L') and i not in config.allowedSymbolInNick:
       return False

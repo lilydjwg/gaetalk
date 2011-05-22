@@ -139,7 +139,7 @@ def handle_message(msg):
   if len(msg.body) > 500:
     msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。')
     return
-  if sender.is_admin:
+  if sender.is_admin or sender.jid == config.root:
     ch = AdminCommand(msg, sender)
   else:
     ch = BasicCommand(msg, sender)

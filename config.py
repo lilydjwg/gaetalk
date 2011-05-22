@@ -5,3 +5,4 @@ timezoneoffset = 8
 default_prefix = '-'
 allowedSymbolInNick = u'™'
 warnGtalk105 = True
+root = 'lilydjwg@gmail.com'

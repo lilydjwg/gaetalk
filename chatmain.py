@@ -26,6 +26,8 @@ class XMPPUnsub(webapp.RequestHandler):
     try:
       u = lilytalk.get_user_by_jid(jid)
       if u is not None:
+        if u.jid == config.root:
+          xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
         lilytalk.log_onoff(u, lilytalk.LEAVE)
         lilytalk.send_to_all(u'%s 已经离开' % u.nick)
         u.delete()

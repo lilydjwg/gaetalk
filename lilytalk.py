@@ -29,6 +29,8 @@ SNOOZE     = u'snooze %ds'
 BLACK      = u'禁言 %s %ds'
 BLACK_AUTO = u'被禁言 %ds'
 KICK       = u'删除 %s (%s)'
+ADMIN      = u'%s 成为管理员 (by %s)'
+UNADMIN    = u'%s 不再是管理员 (by %s)'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -525,3 +527,50 @@ class AdminCommand(BasicCommand):
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已被管理员禁言 %d 秒。' % n)
     log_onoff(self.sender, BLACK % (target.nick, n))
+
+  def do_admin(self, args):
+    '''将某人添加为管理员'''
+    if len(args) != 1:
+      self.msg.reply(u'请给出昵称。')
+      return
+
+    target = get_user_by_nick(args[0])
+    if target is None:
+      self.msg.reply(u'Sorry，查无此人。')
+      return
+
+    if target.is_admin:
+      self.msg.reply(u'%s 已经是管理员了。' % target.nick)
+      return
+
+    target.is_admin = True
+    target.put()
+    send_to_all_except(target.jid,
+                       (u'%s 已成为管理员。' % target.nick) \
+                       .encode('utf-8'))
+    xmpp.send_message(target.jid, u'你已是本群管理员。')
+    log_onoff(self.sender, ADMIN % (target.nick, self.sender.nick))
+
+  def do_unadmin(self, args):
+    '''取消某人管理员的权限'''
+    if len(args) != 1:
+      self.msg.reply(u'请给出昵称。')
+      return
+
+    target = get_user_by_nick(args[0])
+    if target is None:
+      self.msg.reply(u'Sorry，查无此人。')
+      return
+
+    if not target.is_admin:
+      self.msg.reply(u'%s 不是管理员。' % target.nick)
+      return
+
+    target.is_admin = False
+    target.put()
+    send_to_all_except(target.jid,
+                       (u'%s 已不再是管理员。' % target.nick) \
+                       .encode('utf-8'))
+    xmpp.send_message(target.jid, u'你已不再是本群管理员。')
+    log_onoff(self.sender, UNADMIN % (target.nick, self.sender.nick))
+

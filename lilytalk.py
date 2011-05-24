@@ -162,7 +162,7 @@ def handle_message(msg):
       if d.days > 0 or t > 60:
         sender.flooding_point = 0
       else:
-        k = 1000 / (t * t)
+        k = 1000 / (t * t + 1)
         if k > 0:
           sender.flooding_point += k
         else:

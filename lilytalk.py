@@ -418,10 +418,10 @@ class BasicCommand:
       q = list(q)
       q.reverse()
       if q:
-        if (datetime.datetime.today() + timezone).date() == (q[0].time + timezone).date():
-          show_date = False
-        else:
+        if datetime.datetime.today() - q[0].time > datetime.timedelta(hours=24):
           show_date = True
+        else:
+          show_date = False
       for l in q:
         message = '%s %s %s' % (
           utils.strftime(l.time, timezone, show_date),

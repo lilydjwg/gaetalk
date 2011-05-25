@@ -262,7 +262,7 @@ class BasicCommand:
         msg.reply(u'错误：命令名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
       else:
         handle(cmd[1:])
-        logging.debug('%s did command %s' % (sender.jid, msg.body))
+        logging.debug('%s did command %s' % (sender.jid, cmd[0]))
     else:
       self.handled = False
 

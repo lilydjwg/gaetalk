@@ -287,6 +287,27 @@ class BasicCommand:
     r.append(u'共 %d 人在线。' % n)
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
+  def do_lsadmin(self, args):
+    '''显示管理员列表'''
+    r = []
+    now = datetime.datetime.now()
+    l = User.gql('where is_admin = :1', True)
+    for u in l:
+      m = u.nick
+      status = u.avail
+      if status != u'在线':
+        m += u' (%s)' % status
+      if u.snooze_before is not None and u.snooze_before > now:
+        m += u' (snoozing)'
+      if u.black_before is not None and u.black_before > now:
+        m += u' (已禁言)'
+      r.append(unicode('* ' + m))
+    r.sort()
+    n = len(r)
+    r.insert(0, u'管理员列表:')
+    r.append(u'共 %d 位管理员。' % n)
+    self.msg.reply(u'\n'.join(r).encode('utf-8'))
+
   def do_chatty(self, args):
     '''显示成员发送的消息数量'''
     r = []

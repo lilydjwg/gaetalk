@@ -65,6 +65,8 @@ class User(db.Model):
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)
   resources = db.StringListProperty(required=True)
+  #允许他人私信？
+  reject_pm = db.BooleanProperty(default=False)
 
   prefix = db.StringProperty(required=True, default=config.default_prefix)
   nick_pattern = db.StringProperty(required=True, default='[%s]')
@@ -358,6 +360,10 @@ class BasicCommand:
       self.msg.reply('Sorry，查无此人。')
       return
 
+    if target.reject_pm:
+      self.msg.reply('很抱歉，对方不授受私信。')
+      return
+
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
     if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
@@ -483,6 +489,19 @@ class BasicCommand:
       return
 
     self.sender.nick_pattern = arg
+    self.sender.put()
+    self.msg.reply(u'设置成功！')
+
+  def set_allowpm(self, arg):
+    '''设置是否接受私信，参数为 y （接受）或者 n （拒绝）'''
+    if arg not in 'yn':
+      self.msg.reply(u'错误的参数。')
+      return
+
+    if arg == 'y':
+      self.sender.reject_pm = False
+    else:
+      self.sender.reject_pm = True
     self.sender.put()
     self.msg.reply(u'设置成功！')
 

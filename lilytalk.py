@@ -347,6 +347,30 @@ class BasicCommand:
       self.msg.reply('昵称更改成功！')
   do_nick.__doc__ += '，最长 %d 字节' % config.nick_maxlen
 
+  def do_whois(self, args):
+    '''查看某用户的信息'''
+    if len(args) != 1:
+      self.msg.reply('错误：你想知道关于谁的信息？')
+      return
+
+    u = get_user_by_nick(args[0])
+    if u is None:
+      self.msg.reply(u'Sorry，查无此人。')
+      return
+
+    now = datetime.datetime.now()
+    status = u.avail
+    addtime = (u.add_date + timezone).strftime('%Y年%m月%d日 %H时%M分').decode('utf-8')
+    allowpm = u'否' if u.reject_pm else u'是'
+    if u.snooze_before is not None and u.snooze_before > now:
+      status += u' (snoozing)'
+    if u.black_before is not None and u.black_before > now:
+      status += u' (已禁言)'
+    r = u'昵称：\t\t%s\n状态：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接受私信：\t%s\n自我介绍：\t%s' % (
+      u.nick, status, u.msg_count, utils.filesize(u.msg_chars), addtime,
+      allowpm, u.intro)
+    self.msg.reply(r.encode('utf-8'))
+
   def do_help(self, args=None):
     '''显示本帮助'''
     doc = []
@@ -364,9 +388,12 @@ class BasicCommand:
 
   def do_iam(self, args):
     '''查看自己的信息'''
-    s = self.sender
-    r = u'昵称：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
-      s.nick, s.msg_count, utils.filesize(s.msg_chars), s.prefix, s.intro)
+    u = self.sender
+    addtime = (u.add_date + timezone).strftime('%Y年%m月%d日 %H时%M分').decode('utf-8')
+    allowpm = u'否' if u.reject_pm else u'是'
+    r = u'昵称：\t\t%s\nJID：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接受私信：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
+      u.nick, u.jid, u.msg_count, utils.filesize(u.msg_chars), addtime,
+      allowpm, u.prefix, u.intro)
     self.msg.reply(r.encode('utf-8'))
 
   def do_m(self, args):

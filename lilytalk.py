@@ -382,7 +382,7 @@ class BasicCommand:
       return
 
     if target.reject_pm:
-      self.msg.reply('很抱歉，对方不授受私信。')
+      self.msg.reply('很抱歉，对方不接受私信。')
       return
 
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]

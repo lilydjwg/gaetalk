@@ -513,7 +513,7 @@ class BasicCommand:
     self.msg.reply(u'设置成功！')
 
   def set_allowpm(self, arg):
-    '''设置是否接受私信，参数为 y （接受）或者 n （拒绝）'''
+    '''设置是否接受私信，参数为 y（接受）或者 n（拒绝）'''
     if arg not in 'yn':
       self.msg.reply(u'错误的参数。')
       return

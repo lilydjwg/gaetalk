@@ -224,10 +224,10 @@ def try_add_user(jid, show=OFFLINE, resource=''):
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
   nick = jid.split('@')[0]
-  old = User.gql('where nick = :1', nick).get()
+  old = get_user_by_nick(nick)
   while old:
     nick += '_'
-    old = User.gql('where nick = :1', nick).get()
+    old = get_user_by_nick(nick)
   u = User(jid=jid.lower(), avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()
@@ -328,7 +328,7 @@ class BasicCommand:
       self.msg.reply('错误：请给出你想到的昵称（不能包含空格）')
       return
 
-    q = User.gql('where nick = :1', args[0]).get()
+    q = get_user_by_nick(args[0])
     if q is not None:
       self.msg.reply('错误：该昵称已被使用，请使用其它昵称')
     elif not utils.checkNick(args[0]):

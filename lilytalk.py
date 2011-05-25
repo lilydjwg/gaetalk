@@ -99,7 +99,7 @@ def log_onoff(sender, action, resource=''):
   l.put()
 
 def get_user_by_jid(jid):
-  return User.gql('where jid = :1', jid).get()
+  return User.gql('where jid = :1', jid.lower()).get()
 
 def get_user_by_nick(nick):
   return User.gql('where nick = :1', nick).get()
@@ -228,7 +228,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   while old:
     nick += '_'
     old = User.gql('where nick = :1', nick).get()
-  u = User(jid=jid, avail=show, nick=nick)
+  u = User(jid=jid.lower(), avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()
   if resource:

@@ -366,7 +366,7 @@ class BasicCommand:
       status += u' (snoozing)'
     if u.black_before is not None and u.black_before > now:
       status += u' (已禁言)'
-    r = u'昵称：\t\t%s\n状态：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接受私信：\t%s\n自我介绍：\t%s' % (
+    r = u'昵称：\t\t%s\n状态：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接收私信：\t%s\n自我介绍：\t%s' % (
       u.nick, status, u.msg_count, utils.filesize(u.msg_chars), addtime,
       allowpm, u.intro)
     self.msg.reply(r.encode('utf-8'))
@@ -411,13 +411,13 @@ class BasicCommand:
     u = self.sender
     addtime = (u.add_date + timezone).strftime('%Y年%m月%d日 %H时%M分').decode('utf-8')
     allowpm = u'否' if u.reject_pm else u'是'
-    r = u'昵称：\t\t%s\nJID：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接受私信：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
+    r = u'昵称：\t\t%s\nJID：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接收私信：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
       u.nick, u.jid, u.msg_count, utils.filesize(u.msg_chars), addtime,
       allowpm, u.prefix, u.intro)
     self.msg.reply(r.encode('utf-8'))
 
   def do_m(self, args):
-    '''发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。'''
+    '''发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。用户可使用 set 命令设置是否接收私信。'''
     if len(args) < 2:
       self.msg.reply('请给出昵称和内容。')
       return
@@ -428,7 +428,7 @@ class BasicCommand:
       return
 
     if target.reject_pm:
-      self.msg.reply('很抱歉，对方不接受私信。')
+      self.msg.reply('很抱歉，对方不接收私信。')
       return
 
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
@@ -580,7 +580,7 @@ class BasicCommand:
     self.msg.reply(u'设置成功！')
 
   def set_allowpm(self, arg):
-    '''设置是否接受私信，参数为 y（接受）或者 n（拒绝）'''
+    '''设置是否接收私信，参数为 y（接收）或者 n（拒绝）'''
     if arg not in 'yn':
       self.msg.reply(u'错误的参数。')
       return

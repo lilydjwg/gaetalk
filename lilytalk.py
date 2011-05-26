@@ -638,7 +638,7 @@ class AdminCommand(BasicCommand):
     target.put()
     self.msg.reply((u'OK，禁言 %s %d 秒。' % (target.nick, n)).encode('utf-8'))
     send_to_all_except((self.sender.jid, target.jid),
-                       (u'%s 已被禁言 %s 秒。' % (self.sender.nick, n)) \
+                       (u'%s 已被禁言 %s 秒。' % (target.nick, n)) \
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已被管理员禁言 %d 秒。' % n)
     log_onoff(self.sender, BLACK % (target.nick, n))

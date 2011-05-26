@@ -323,7 +323,7 @@ class BasicCommand:
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_nick(self, args):
-    '''更改昵称，需要一个参数，不能使用标点符号'''
+    '''更改昵称，需要一个参数，不能使用大部分标点符号'''
     if len(args) != 1:
       self.msg.reply('错误：请给出你想到的昵称（不能包含空格）')
       return

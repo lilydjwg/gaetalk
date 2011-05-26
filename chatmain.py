@@ -50,9 +50,17 @@ class XMPPAvail(webapp.RequestHandler):
     status = self.request.get('status')
     show = self.request.get('show')
     logging.debug(u'%s 的状态: %s (%s)' % (jid, status, show))
-    show = lilytalk.STATUS_CODE[show]
-    xmpp.send_presence(self.request.get('from'),
-      status=lilytalk.notice)
+    try:
+      show = lilytalk.STATUS_CODE[show]
+    except KeyError:
+      logging.error('%s has sent an incorrect show code %s' % (jid, show))
+      return
+    try:
+      xmpp.send_presence(self.request.get('from'),
+        status=lilytalk.notice)
+    except xmpp.Error:
+      logging.error('Error while sending presence to %s' % jid)
+      return
     u = lilytalk.get_user_by_jid(jid)
     if u is not None:
       modified = False

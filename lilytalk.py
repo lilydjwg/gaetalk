@@ -418,6 +418,26 @@ class BasicCommand:
     else:
       self.msg.reply(u'消息发送失败')
 
+  def do_intro(self, arg):
+    '''设置自我介绍信息'''
+    if not arg:
+      self.msg.reply('请给出自我介绍的内容。')
+      return
+
+    msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
+    u = self.sender
+    try:
+      u.intro = msg
+    except db.BadValueError:
+      # 过长文本已在 handle_message 中被拦截
+      self.msg.reply('错误：自我介绍内容只能为一行。')
+      return
+
+    u.put()
+    send_to_all_except(u.jid,
+      (u'%s 的新自我介绍：%s' % (u.nick, msg)).encode('utf-8'))
+    self.msg.reply(u'设置成功！')
+
   def do_snooze(self, args):
     '''暂停接收消息，参数为时间（默认单位为秒）。再次发送消息时自动清除'''
     if len(args) != 1:

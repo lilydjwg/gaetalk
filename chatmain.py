@@ -98,8 +98,12 @@ class XMPPUnavail(webapp.RequestHandler):
 class XMPPProbe(webapp.RequestHandler):
   def post(self):
     fulljid = self.request.get('from')
-    xmpp.send_presence(self.request.get('from'),
-      status=lilytalk.notice)
+    try:
+      xmpp.send_presence(self.request.get('from'),
+        status=lilytalk.notice)
+    except xmpp.Error:
+      logging.error('Error while sending presence to %s' % jid)
+      return
 
 class XMPPDummy(webapp.RequestHandler):
   def post(self):

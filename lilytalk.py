@@ -267,7 +267,7 @@ class BasicCommand:
       self.handled = False
 
   def do_online(self, args):
-    '''显示在线成员列表'''
+    '''在线成员列表'''
     r = []
     now = datetime.datetime.now()
     l = User.gql('where avail != :1', OFFLINE)
@@ -288,7 +288,7 @@ class BasicCommand:
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_lsadmin(self, args):
-    '''显示管理员列表'''
+    '''管理员列表'''
     r = []
     now = datetime.datetime.now()
     l = User.gql('where is_admin = :1', True)
@@ -309,7 +309,7 @@ class BasicCommand:
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_chatty(self, args):
-    '''显示成员发送的消息数量'''
+    '''消息数排行'''
     r = []
     for u in User.gql('ORDER BY msg_chars ASC'):
       m = u.nick
@@ -323,7 +323,7 @@ class BasicCommand:
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_nick(self, args):
-    '''更改昵称，需要一个参数'''
+    '''更改昵称，需要一个参数，不能使用标点符号'''
     if len(args) != 1:
       self.msg.reply('错误：请给出你想到的昵称（不能包含空格）')
       return
@@ -348,7 +348,7 @@ class BasicCommand:
   do_nick.__doc__ += '，最长 %d 字节' % config.nick_maxlen
 
   def do_whois(self, args):
-    '''查看某用户的信息'''
+    '''查看用户信息，参数为用户昵称'''
     if len(args) != 1:
       self.msg.reply('错误：你想知道关于谁的信息？')
       return
@@ -371,20 +371,40 @@ class BasicCommand:
       allowpm, u.intro)
     self.msg.reply(r.encode('utf-8'))
 
-  def do_help(self, args=None):
-    '''显示本帮助'''
+  def do_help(self, args=()):
+    '''显示本帮助。参数 long 显示详细帮助，也可指定命令名。'''
     doc = []
     prefix = self.sender.prefix
 
-    for b in self.__class__.__bases__ + (self.__class__,):
-      for c, f in b.__dict__.items():
-        if c.startswith('do_'):
-          doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
+    if len(args) > 1:
+      self.msg.reply('参数错误。')
+      return
+    arg = args[0] if args else None
 
-    doc.sort()
-    doc.insert(0, u'命令指南 (当前命令前缀 %s，可设置)' % prefix)
-    doc.append(u'要离开，直接删掉好友即可。')
-    self.msg.reply(u'\n'.join(doc).encode('utf-8'))
+    if arg is None or arg == 'long':
+      for b in self.__class__.__bases__ + (self.__class__,):
+        for c, f in b.__dict__.items():
+          if c.startswith('do_'):
+            if arg is None:
+              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8').split(u'，', 1)[0].split(u'。', 1)[0]))
+            else:
+              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
+      doc.sort()
+      if arg is None:
+        doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置。使用参数 long 显示详细帮助)' % prefix)
+      else:
+        doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置)' % prefix)
+      doc.append(u'要离开，直接删掉好友即可。')
+      self.msg.reply(u'\n'.join(doc).encode('utf-8'))
+    else:
+      try:
+        handle = getattr(self, 'do_' + arg)
+      except AttributeError:
+        self.msg.reply(u'错误：未知命令 %s' % arg)
+      except UnicodeEncodeError:
+        self.msg.reply(u'错误：命令名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
+      else:
+        self.msg.reply(u'%s%s:\t%s' % (prefix, arg, handle.__doc__.decode('utf-8')))
 
   def do_iam(self, args):
     '''查看自己的信息'''
@@ -397,7 +417,7 @@ class BasicCommand:
     self.msg.reply(r.encode('utf-8'))
 
   def do_m(self, args):
-    '''给某人发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。'''
+    '''发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。'''
     if len(args) < 2:
       self.msg.reply('请给出昵称和内容。')
       return
@@ -463,7 +483,7 @@ class BasicCommand:
     log_onoff(self.sender, SNOOZE % n)
 
   def do_offline(self, args):
-    '''让程序认为你的所有资源已离线。如在你离线时程序仍认为你在线，请使用此命令。'''
+    '''假装离线，让程序认为你的所有资源已离线。如在你离线时程序仍认为你在线，请使用此命令。'''
     del self.sender.resources[:]
     self.sender.avail = OFFLINE
     self.sender.last_offline_date = datetime.datetime.now()
@@ -471,7 +491,7 @@ class BasicCommand:
     self.msg.reply('OK，在下次你说你在线之前我都认为你已离线。')
 
   def do_old(self, args):
-    '''查询聊天记录，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE 显示离线消息（最多 100 条）'''
+    '''聊天记录查询，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE （不区分大小写）显示离线消息（最多 100 条）'''
     s = self.sender
     q = False
     if not args:
@@ -510,7 +530,7 @@ class BasicCommand:
       self.msg.reply('Oops, 参数不正确哦。')
 
   def do_set(self, args):
-    '''设置一些参数。参数格式 key=value；不带参数以查看说明。'''
+    '''设置参数。参数格式 key=value；不带参数以查看说明。'''
     #注意：选项名/值中不能包含空格
     if len(args) != 1:
       doc = []

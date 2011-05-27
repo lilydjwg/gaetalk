@@ -267,12 +267,15 @@ class BasicCommand:
       self.handled = False
 
   def do_online(self, args):
-    '''在线成员列表'''
+    '''在线成员列表。可带一个参数，指定在名字中出现的一个子串。'''
     r = []
+    pat = args[0] if args else None
     now = datetime.datetime.now()
     l = User.gql('where avail != :1', OFFLINE)
     for u in l:
       m = u.nick
+      if pat and m.find(pat) == -1:
+        continue
       status = u.avail
       if status != u'在线':
         m += u' (%s)' % status
@@ -283,8 +286,12 @@ class BasicCommand:
       r.append(unicode('* ' + m))
     r.sort()
     n = len(r)
-    r.insert(0, u'在线成员列表:')
-    r.append(u'共 %d 人在线。' % n)
+    if pat:
+      r.insert(0, u'在线成员列表（包含子串 %s）:' % pat)
+      r.append(u'共 %d 人。' % n)
+    else:
+      r.insert(0, u'在线成员列表:')
+      r.append(u'共 %d 人在线。' % n)
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_lsadmin(self, args):

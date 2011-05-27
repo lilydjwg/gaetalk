@@ -20,7 +20,7 @@ class Userdedup(webapp.RequestHandler):
       v.sort(key=lambda u: lilytalk.STATUS_LIST.index(u.avail))
       logging.error(' '.join([x.avail for x in v]))
       for i in v[1:]:
-        l = lilytalk.Log(msg=u'删除重复用户 %s', jid=i.jid,
+        l = lilytalk.Log(msg=u'删除重复用户', jid=i.jid,
                          nick=i.nick, type='misc')
         l.put()
         i.delete()

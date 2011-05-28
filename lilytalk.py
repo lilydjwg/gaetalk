@@ -373,10 +373,17 @@ class BasicCommand:
       status += u' (snoozing)'
     if u.black_before is not None and u.black_before > now:
       status += u' (已禁言)'
-    r = u'昵称：\t\t%s\n状态：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接收私信：\t%s\n自我介绍：\t%s' % (
-      u.nick, status, u.msg_count, utils.filesize(u.msg_chars), addtime,
-      allowpm, u.intro)
-    self.msg.reply(r.encode('utf-8'))
+    r = []
+    r.append(u'昵称：\t%s' % u.nick)
+    if self.sender.is_admin:
+      r.append(u'JID：\t%s' % u.jid)
+    r.append(u'状态：\t%s' % status)
+    r.append(u'消息数：\t%d' % u.msg_count)
+    r.append(u'消息总量：\t%s' % utils.filesize(u.msg_chars))
+    r.append(u'加入时间：\t%s' % addtime)
+    r.append(u'接收私信：\t%s' % allowpm)
+    r.append(u'自我介绍：\t%s' % u.intro)
+    self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_help(self, args=()):
     '''显示本帮助。参数 long 显示详细帮助，也可指定命令名。'''
@@ -418,10 +425,16 @@ class BasicCommand:
     u = self.sender
     addtime = (u.add_date + timezone).strftime('%Y年%m月%d日 %H时%M分').decode('utf-8')
     allowpm = u'否' if u.reject_pm else u'是'
-    r = u'昵称：\t\t%s\nJID：\t\t%s\n消息数：\t\t%d\n消息总量：\t%s\n加入时间：\t%s\n接收私信：\t%s\n命令前缀：\t%s\n自我介绍：\t%s' % (
-      u.nick, u.jid, u.msg_count, utils.filesize(u.msg_chars), addtime,
-      allowpm, u.prefix, u.intro)
-    self.msg.reply(r.encode('utf-8'))
+    r = []
+    r.append(u'昵称：\t%s' % u.nick)
+    r.append(u'JID：\t%s' % u.jid)
+    r.append(u'消息数：\t%d' % u.msg_count)
+    r.append(u'消息总量：\t%s' % utils.filesize(u.msg_chars))
+    r.append(u'加入时间：\t%s' % addtime)
+    r.append(u'命令前缀：\t%s' % u.prefix)
+    r.append(u'接收私信：\t%s' % allowpm)
+    r.append(u'自我介绍：\t%s' % u.intro)
+    self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_m(self, args):
     '''发私信，需要昵称和内容两个参数。私信不会以任何方式被记录。用户可使用 set 命令设置是否接收私信。'''

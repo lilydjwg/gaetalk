@@ -510,6 +510,12 @@ class BasicCommand:
     self.sender.put()
     self.msg.reply('OK，在下次你说你在线之前我都认为你已离线。')
 
+  def do_fakeresource(self, args):
+    '''假装在线，人工加入一个新的资源，使程序认为你总是在线。使用 offline 命令可删除所有资源的记录。'''
+    self.sender.resources.append('fakeresouce')
+    self.sender.put()
+    self.msg.reply('OK，你将永远在线。')
+
   def do_old(self, args):
     '''聊天记录查询，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE （不区分大小写）显示离线消息（最多 100 条）'''
     s = self.sender

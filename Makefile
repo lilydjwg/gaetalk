@@ -7,6 +7,6 @@ README.html: README.mkd
 	@echo '<link rel="stylesheet" href="css/markdown.css" type="text/css" />' >> $@
 	@echo '<meta http-equiv="content-type" content="text/html; charset=utf-8" />' >> $@
 	@echo '<title>lilytalk 介绍</title>' >> $@
-	Markdown.pl < $< >> $@
+	markdown < $< >> $@
 clean:
 	-rm *.html

@@ -405,7 +405,7 @@ class BasicCommand:
               doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
       doc.sort()
       if arg is None:
-        doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置。使用参数 long 显示详细帮助)' % prefix)
+        doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置。使用 %shelp long 显示详细帮助)' % (prefix, prefix))
       else:
         doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置)' % prefix)
       doc.append(u'要离开，直接删掉好友即可。')

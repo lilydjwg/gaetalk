@@ -428,6 +428,7 @@ class BasicCommand:
     r = []
     r.append(u'昵称：\t%s' % u.nick)
     r.append(u'JID：\t%s' % u.jid)
+    r.append(u'资源：\t%s' % u' '.join(u.resources))
     r.append(u'消息数：\t%d' % u.msg_count)
     r.append(u'消息总量：\t%s' % utils.filesize(u.msg_chars))
     r.append(u'加入时间：\t%s' % addtime)

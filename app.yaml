@@ -16,6 +16,9 @@ handlers:
   static_dir: css
 - url: /img
   static_dir: img
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  login: admin
 
 inbound_services:
 - xmpp_message

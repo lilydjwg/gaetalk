@@ -410,6 +410,7 @@ class BasicCommand:
       else:
         doc.insert(0, u'** 命令指南 **\n(当前命令前缀 %s，可设置)' % prefix)
       doc.append(u'要离开，直接删掉好友即可。')
+      doc.append(u'Gtalk 客户端用户要离开请使用 quit 命令。')
       self.msg.reply(u'\n'.join(doc).encode('utf-8'))
     else:
       try:
@@ -588,6 +589,16 @@ class BasicCommand:
         msg.reply(u'错误：选项名解码失败。此问题在 GAE 升级其 Python 到 3.x 后方能解决。')
       else:
         handle(cmd[1])
+
+  def do_quit(self, args):
+    '''删除用户数据。某些自称“不作恶”的公司的客户端会不按协议要求发送删除好友的消息，请 gtalk 官方客户端用户使用此命令退出。参见 http://xmpp.org/rfcs/rfc3921.html#rfc.section.6.3 。'''
+    u = self.sender
+    if u.jid == config.root:
+      xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
+    log_onoff(u, LEAVE)
+    send_to_all(u'%s 已经离开 (通过使用命令)' % u.nick)
+    u.delete()
+    logging.info(u'%s (%s) 已经离开 (通过使用命令)' % (u.nick, u.jid))
 
   def set_prefix(self, arg):
     '''设置命令前缀'''

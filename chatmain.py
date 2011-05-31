@@ -20,6 +20,7 @@ class XMPPSub(webapp.RequestHandler):
 
 class XMPPUnsub(webapp.RequestHandler):
   def post(self):
+    # 注意：由于 gtalk 客户端的错误处理，提供了一个使用命令离开的方式
     jid = self.request.get('from')
     L = utils.MemLock('delete_user')
     L.require()

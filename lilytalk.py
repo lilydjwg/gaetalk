@@ -31,6 +31,7 @@ BLACK_AUTO = u'被禁言 %ds'
 KICK       = u'删除 %s (%s)'
 ADMIN      = u'%s 成为管理员 (by %s)'
 UNADMIN    = u'%s 不再是管理员 (by %s)'
+NOTICE     = u'通告：%s'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -669,6 +670,22 @@ class AdminCommand(BasicCommand):
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已被管理员禁言 %d 秒。' % n)
     log_onoff(self.sender, BLACK % (target.nick, n))
+
+  def do_notice(self, arg):
+    '''发送群通告。只会发给在线的人，包括 snoozing 者。'''
+    if not arg:
+      self.msg.reply('请给出群通告的内容。')
+      return
+
+    msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
+
+    l = User.gql('where avail != :1', OFFLINE)
+    log_onoff(self.sender, NOTICE % msg)
+    for u in l:
+      try:
+        xmpp.send_message(u.jid, u'通告：' + msg)
+      except xmpp.InvalidJidError:
+        pass
 
   def do_admin(self, args):
     '''将某人添加为管理员'''

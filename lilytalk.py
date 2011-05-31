@@ -640,7 +640,7 @@ class AdminCommand(BasicCommand):
     targetnick = target.nick
     target.delete()
     self.msg.reply((u'OK，删除 %s。' % target.nick).encode('utf-8'))
-    send_to_all_except(self.sender.jid, (u'%s 已被删除。' % self.sender.nick) \
+    send_to_all_except(self.sender.jid, (u'%s 已被删除。' % target.nick) \
                        .encode('utf-8'))
     xmpp.send_message(targetjid, u'你已被管理员从此群中删除，请删除该好友。')
     log_onoff(self.sender, KICK % (targetnick, targetjid))

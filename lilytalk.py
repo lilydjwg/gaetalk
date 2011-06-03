@@ -141,9 +141,9 @@ def send_to_all(message):
 def send_status(jid):
   grp = get_group_info()
   if grp is None or not grp.status:
-    xmpp.send_presence(self.request.get('from'))
+    xmpp.send_presence(jid)
   else:
-    xmpp.send_presence(self.request.get('from'), status=grp.status)
+    xmpp.send_presence(jid)
 
 def handle_message(msg):
   sender = get_user_by_jid(msg.sender.split('/')[0])

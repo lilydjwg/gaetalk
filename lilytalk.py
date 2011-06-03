@@ -109,7 +109,7 @@ def get_user_by_jid(jid):
 def get_user_by_nick(nick):
   return User.gql('where nick = :1', nick).get()
 
-def get_group_info(nick):
+def get_group_info():
   return Group.all().get()
 
 def get_member_list():

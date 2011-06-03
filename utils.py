@@ -18,6 +18,8 @@ timeUnitMap = {
   'h': 3600,
   'd': 86400,
 }
+timeZhUnitMap = (60, 60, 24, 36524)
+timeZhUnits = ('秒', '分', '小时', '天')
 
 def filesize(size):
   '''将 数字 转化为 xxKiB 的形式'''
@@ -53,6 +55,16 @@ def parseTime(s):
     return n
   else:
     return n * timeUnitMap[u]
+
+def displayTime(t):
+  '''友好地显示时间'''
+  r = []
+  for i in timeZhUnitMap:
+    r.append(t % i)
+    t = t // i
+    if t == 0:
+      break
+  return ''.join(reversed(map(lambda x, y: str(x)+y if x else '', r, timeZhUnits)))
 
 def checkNick(nick):
   '''判断一个昵称是否合法'''

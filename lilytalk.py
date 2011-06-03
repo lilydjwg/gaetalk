@@ -86,6 +86,11 @@ class Group(db.Model):
   topic = db.StringProperty(multiline=True)
   status = db.StringProperty()
 
+class BlockedUser(db.Model):
+  jid = db.StringProperty(required=True, indexed=True)
+  add_date = db.DateTimeProperty(auto_now_add=True)
+  reason = db.StringProperty()
+
 def log_msg(sender, msg):
   l = Log(jid=sender.jid, nick=sender.nick,
           type='chat', msg=msg)
@@ -111,6 +116,9 @@ def get_user_by_nick(nick):
 
 def get_group_info():
   return Group.all().get()
+
+def get_blocked_user(jid):
+  return BlockedUser.gql('where jid = :1', jid.lower()).get()
 
 def get_member_list():
   r = []
@@ -139,6 +147,11 @@ def send_to_all(message):
   xmpp.send_message(jids, message)
 
 def send_status(jid):
+  u = get_blocked_user(jid)
+  if u is not None:
+    xmpp.send_message(jid, status=u'您已经被本群封禁')
+    return
+
   grp = get_group_info()
   if grp is None or not grp.status:
     xmpp.send_presence(jid)
@@ -146,7 +159,12 @@ def send_status(jid):
     xmpp.send_presence(jid)
 
 def handle_message(msg):
-  sender = get_user_by_jid(msg.sender.split('/')[0])
+  jid = msg.sender.split('/')[0]
+  sender = get_blocked_user(jid)
+  if sender is not None:
+    msg.reply(u'您已经被本群封禁，原因为 %s。' % sender.reason)
+    return
+  sender = get_user_by_jid(jid)
   if sender is None:
     msg.reply('很抱歉，出错了，请重新添加好友。')
     return
@@ -223,6 +241,11 @@ def handle_message(msg):
 
 def try_add_user(jid, show=OFFLINE, resource=''):
   '''使用 memcache 作为锁添加用户'''
+  u = get_blocked_user(jid)
+  if u is not None:
+    xmpp.send_message(jid, u'您已经被本群封禁，原因为 %s。' % u.reason)
+    return
+
   L = utils.MemLock('add_user')
   L.require()
   try:

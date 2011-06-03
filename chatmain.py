@@ -57,8 +57,7 @@ class XMPPAvail(webapp.RequestHandler):
       logging.error('%s has sent an incorrect show code %s' % (jid, show))
       return
     try:
-      xmpp.send_presence(self.request.get('from'),
-        status=lilytalk.notice)
+      lilytalk.send_status(self.request.get('from'))
     except xmpp.Error:
       logging.error('Error while sending presence to %s' % jid)
       return
@@ -100,8 +99,7 @@ class XMPPProbe(webapp.RequestHandler):
   def post(self):
     fulljid = self.request.get('from')
     try:
-      xmpp.send_presence(self.request.get('from'),
-        status=lilytalk.notice)
+      lilytalk.send_status(self.request.get('from'))
     except xmpp.Error:
       logging.error('Error while sending presence to %s' % jid)
       return

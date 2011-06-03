@@ -11,7 +11,6 @@ from google.appengine.api import xmpp
 import utils
 import config
 
-notice = u'这是一个测试群'
 helpre = re.compile(r'^\W{0,2}help$')
 
 #用户所有资源离线时，会加上“完全”二字
@@ -139,6 +138,13 @@ def send_to_all(message):
   jids = get_member_list()
   xmpp.send_message(jids, message)
 
+def send_status(jid):
+  grp = get_group_info()
+  if grp is None or not grp.status:
+    xmpp.send_presence(self.request.get('from'))
+  else:
+    xmpp.send_presence(self.request.get('from'), status=grp.status)
+
 def handle_message(msg):
   sender = get_user_by_jid(msg.sender.split('/')[0])
   if sender is None:
@@ -246,7 +252,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
   send_to_all_except(jid, u'%s 已经加入' % u.nick)
-  xmpp.send_presence(jid, status=notice)
+  send_status(self.request.get('from'))
   xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 %shelp' % (
     u.nick, u.prefix))
   return u
@@ -774,3 +780,11 @@ class AdminCommand(BasicCommand):
     xmpp.send_message(target.jid, u'你已不再是本群管理员。')
     log_onoff(self.sender, UNADMIN % (target.nick, self.sender.nick))
 
+  def do_groupstatus(self, arg):
+    '''设置群状态'''
+    grp = get_group_info()
+    if grp is None:
+      grp = Group()
+    grp.status = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+    grp.put()
+    self.msg.reply(u'设置成功！')

@@ -31,6 +31,8 @@ KICK       = u'删除 %s (%s)'
 ADMIN      = u'%s 成为管理员 (by %s)'
 UNADMIN    = u'%s 不再是管理员 (by %s)'
 NOTICE     = u'通告：%s'
+BLOCK      = u'封禁 %s，原因：%s'
+UNBLOCK    = u'解封 %s'
 
 STATUS_CODE = {
   '':     ONLINE,
@@ -351,6 +353,21 @@ class BasicCommand:
     n = len(r)
     r.insert(0, u'管理员列表:')
     r.append(u'共 %d 位管理员。' % n)
+    self.msg.reply(u'\n'.join(r).encode('utf-8'))
+
+  def do_lsblocked(self, args):
+    '''列出被封禁用户名单'''
+    r = []
+    l = BlockedUser.all()
+    for u in l:
+      r.append(unicode('* %s (%s, %s)' % (u.jid,
+                                          utils.strftime(u.add_date, timezone),
+                                          u.reason)
+                      )
+    r.sort()
+    n = len(r)
+    r.insert(0, u'封禁列表:')
+    r.append(u'共 %d 个 JID 被封禁。' % n)
     self.msg.reply(u'\n'.join(r).encode('utf-8'))
 
   def do_chatty(self, args):
@@ -802,6 +819,47 @@ class AdminCommand(BasicCommand):
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已不再是本群管理员。')
     log_onoff(self.sender, UNADMIN % (target.nick, self.sender.nick))
+
+  def do_block(self, args):
+    '''封禁某个 ID，参数为用户昵称或者 ID（如果不是已经加入的 ID 的话），以及封禁原因'''
+    if len(args) < 2:
+      self.msg.reply(u'请给出要封禁的用户和原因。')
+      return
+
+    target = get_user_by_nick(args[0])
+    reason = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+    if target is None:
+      jid = args[0]
+      name = jid
+    else:
+      jid = target.jid
+      name = target.nick
+      target.delete()
+    u = BlockedUser(jid=jid, reason=reason)
+    u.put()
+
+    send_to_all_except(self.sender.jid,
+                       (u'%s 已被本群封禁，理由为 %s。' % (name, reason)) \
+                       .encode('utf-8'))
+    xmpp.send_message(target.jid, u'你已被本群封禁，理由为 %s。' % reason)
+    log_onoff(self.sender, BLOCK % (name, reason))
+
+  def do_unblock(self, args):
+    '''解封某个 ID'''
+    if len(args) != 1:
+      self.msg.reply(u'请给出要解封用户的 JID。')
+      return
+
+    target = get_blocked_user(args[0])
+    if target is None:
+      self.msg.reply(u'封禁列表中没有这个 JID。')
+      return
+
+    target.delete()
+    send_to_all_except(self.sender.jid,
+                       (u'%s 已被解封禁。' % args[0]) \
+                       .encode('utf-8'))
+    log_onoff(self.sender, UNBLOCK % args[0])
 
   def do_groupstatus(self, arg):
     '''设置群状态'''

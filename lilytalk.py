@@ -81,7 +81,7 @@ class Log(db.Model):
   jid = db.StringProperty()
   nick = db.StringProperty()
   type = db.StringProperty(required=True, indexed=True,
-                           choices=set(['chat', 'member', 'misc']))
+                           choices=set(['chat', 'member', 'admin', 'misc']))
 
 class Group(db.Model):
   time = db.DateTimeProperty(auto_now_add=True)
@@ -108,6 +108,11 @@ def log_onoff(sender, action, resource=''):
     msg = action
   l = Log(jid=sender.jid, nick=sender.nick,
           type='member', msg=msg)
+  l.put()
+
+def log_admin(sender, action):
+  l = Log(jid=sender.jid, nick=sender.nick,
+          type='admin', msg=action)
   l.put()
 
 def get_user_by_jid(jid):
@@ -716,7 +721,7 @@ class AdminCommand(BasicCommand):
     send_to_all_except(self.sender.jid, (u'%s 已被删除。' % target.nick) \
                        .encode('utf-8'))
     xmpp.send_message(targetjid, u'你已被管理员从此群中删除，请删除该好友。')
-    log_onoff(self.sender, KICK % (targetnick, targetjid))
+    log_admin(self.sender, KICK % (targetnick, targetjid))
 
   def do_quiet(self, args):
     '''禁言某人，参数为昵称和时间（默认单位秒）'''
@@ -742,7 +747,7 @@ class AdminCommand(BasicCommand):
                        (u'%s 已被禁言 %s。' % (target.nick, utils.displayTime(n))) \
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已被管理员禁言 %s。' % utils.displayTime(n))
-    log_onoff(self.sender, BLACK % (target.nick, n))
+    log_admin(self.sender, BLACK % (target.nick, n))
 
   def do_notice(self, arg):
     '''发送群通告。只会发给在线的人，包括 snoozing 者。'''
@@ -753,7 +758,7 @@ class AdminCommand(BasicCommand):
     msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
 
     l = User.gql('where avail != :1', OFFLINE)
-    log_onoff(self.sender, NOTICE % msg)
+    log_admin(self.sender, NOTICE % msg)
     for u in l:
       try:
         xmpp.send_message(u.jid, u'通告：' + msg)
@@ -795,7 +800,7 @@ class AdminCommand(BasicCommand):
                        (u'%s 已成为管理员。' % target.nick) \
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已是本群管理员。')
-    log_onoff(self.sender, ADMIN % (target.nick, self.sender.nick))
+    log_admin(self.sender, ADMIN % (target.nick, self.sender.nick))
 
   def do_unadmin(self, args):
     '''取消某人管理员的权限'''
@@ -818,7 +823,7 @@ class AdminCommand(BasicCommand):
                        (u'%s 已不再是管理员。' % target.nick) \
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已不再是本群管理员。')
-    log_onoff(self.sender, UNADMIN % (target.nick, self.sender.nick))
+    log_admin(self.sender, UNADMIN % (target.nick, self.sender.nick))
 
   def do_block(self, args):
     '''封禁某个 ID，参数为用户昵称或者 ID（如果不是已经加入的 ID 的话），以及封禁原因'''
@@ -842,7 +847,7 @@ class AdminCommand(BasicCommand):
                        (u'%s 已被本群封禁，理由为 %s。' % (name, reason)) \
                        .encode('utf-8'))
     xmpp.send_message(target.jid, u'你已被本群封禁，理由为 %s。' % reason)
-    log_onoff(self.sender, BLOCK % (name, reason))
+    log_admin(self.sender, BLOCK % (name, reason))
 
   def do_unblock(self, args):
     '''解封某个 ID'''
@@ -859,7 +864,7 @@ class AdminCommand(BasicCommand):
     send_to_all_except(self.sender.jid,
                        (u'%s 已被解封禁。' % args[0]) \
                        .encode('utf-8'))
-    log_onoff(self.sender, UNBLOCK % args[0])
+    log_admin(self.sender, UNBLOCK % args[0])
 
   def do_groupstatus(self, arg):
     '''设置群状态'''

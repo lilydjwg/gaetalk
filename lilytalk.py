@@ -82,6 +82,11 @@ class Log(db.Model):
   type = db.StringProperty(required=True, indexed=True,
                            choices=set(['chat', 'member', 'misc']))
 
+class Group(db.Model):
+  time = db.DateTimeProperty(auto_now_add=True)
+  topic = db.StringProperty(multiline=True)
+  status = db.StringProperty()
+
 def log_msg(sender, msg):
   l = Log(jid=sender.jid, nick=sender.nick,
           type='chat', msg=msg)
@@ -104,6 +109,9 @@ def get_user_by_jid(jid):
 
 def get_user_by_nick(nick):
   return User.gql('where nick = :1', nick).get()
+
+def get_group_info(nick):
+  return Group.all().get()
 
 def get_member_list():
   r = []
@@ -422,6 +430,14 @@ class BasicCommand:
       else:
         self.msg.reply(u'%s%s:\t%s' % (prefix, arg, handle.__doc__.decode('utf-8')))
 
+  def do_topic(self, args=()):
+    '''查看群主题'''
+    grp = get_group_info()
+    if grp is None or not grp.topic:
+      self.msg.reply(u'没有设置群主题。')
+    else:
+      self.msg.reply(grp.topic)
+
   def do_iam(self, args):
     '''查看自己的信息'''
     u = self.sender
@@ -697,6 +713,20 @@ class AdminCommand(BasicCommand):
         xmpp.send_message(u.jid, u'通告：' + msg)
       except xmpp.InvalidJidError:
         pass
+
+  def do_topic(self, args=()):
+    '''查看或设置群主题'''
+    grp = get_group_info()
+    if not args:
+      if grp is None or not grp.topic:
+        self.msg.reply(u'没有设置群主题。')
+      else:
+        self.msg.reply(grp.topic)
+    else:
+      grp = Group()
+      grp.topic = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+      grp.put()
+      self.msg.reply(u'群主题已更新。')
 
   def do_admin(self, args):
     '''将某人添加为管理员'''

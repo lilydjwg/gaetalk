@@ -163,7 +163,7 @@ def send_status(jid):
   if grp is None or not grp.status:
     xmpp.send_presence(jid)
   else:
-    xmpp.send_presence(jid)
+    xmpp.send_presence(jid, status=grp.status)
 
 def handle_message(msg):
   jid = msg.sender.split('/')[0]
@@ -874,4 +874,6 @@ class AdminCommand(BasicCommand):
       grp = Group()
     grp.status = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
     grp.put()
+    for u in User.all():
+      xmpp.send_presence(u.jid, status=grp.status)
     self.msg.reply(u'设置成功！')

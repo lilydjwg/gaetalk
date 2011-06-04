@@ -369,6 +369,7 @@ class BasicCommand:
                                           utils.strftime(u.add_date, timezone),
                                           u.reason)
                       )
+              )
     r.sort()
     n = len(r)
     r.insert(0, u'封禁列表:')
@@ -775,7 +776,7 @@ class AdminCommand(BasicCommand):
         self.msg.reply(grp.topic)
     else:
       grp = Group()
-      grp.topic = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+      grp.topic = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
       grp.put()
       self.msg.reply(u'群主题已更新。')
 
@@ -871,6 +872,6 @@ class AdminCommand(BasicCommand):
     grp = get_group_info()
     if grp is None:
       grp = Group()
-    grp.status = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+    grp.status = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
     grp.put()
     self.msg.reply(u'设置成功！')

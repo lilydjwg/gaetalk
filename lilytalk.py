@@ -775,7 +775,9 @@ class AdminCommand(BasicCommand):
       else:
         self.msg.reply(grp.topic)
     else:
-      grp = Group()
+      grp = get_group_info()
+      if grp is None:
+        grp = Group()
       grp.topic = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
       grp.put()
       self.msg.reply(u'群主题已更新。')

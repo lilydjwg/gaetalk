@@ -156,7 +156,7 @@ def send_to_all(message):
 def send_status(jid):
   u = get_blocked_user(jid)
   if u is not None:
-    xmpp.send_message(jid, status=u'您已经被本群封禁')
+    xmpp.send_presence(jid, status=u'您已经被本群封禁')
     return
 
   grp = get_group_info()
@@ -173,7 +173,7 @@ def handle_message(msg):
     return
   sender = get_user_by_jid(jid)
   if sender is None:
-    msg.reply('很抱歉，出错了，请重新添加好友。')
+    msg.reply('很抱歉，出错了，请尝试更改状态或者重新添加好友。')
     return
   if msg.body.startswith('?OTR:'):
     msg.reply('不支持 OTR 加密！')
@@ -282,7 +282,7 @@ def add_user(jid, show=OFFLINE, resource=''):
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
   send_to_all_except(jid, u'%s 已经加入' % u.nick)
-  send_status(self.request.get('from'))
+  send_status(jid)
   xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 %shelp' % (
     u.nick, u.prefix))
   return u
@@ -839,18 +839,27 @@ class AdminCommand(BasicCommand):
     if target is None:
       jid = args[0]
       name = jid
+      fullname = name
     else:
       jid = target.jid
       name = target.nick
+      fullname = '%s (%s)' % (name, jid)
       target.delete()
+    u = BlockedUser.gql('where jid = :1', jid).get()
+    if u is not None:
+      self.msg.reply(u'此 JID 已经被封禁。')
+      return
+
     u = BlockedUser(jid=jid, reason=reason)
     u.put()
 
     send_to_all_except(self.sender.jid,
                        (u'%s 已被本群封禁，理由为 %s。' % (name, reason)) \
                        .encode('utf-8'))
-    xmpp.send_message(target.jid, u'你已被本群封禁，理由为 %s。' % reason)
-    log_admin(self.sender, BLOCK % (name, reason))
+    self.msg.reply(u'%s 已被本群封禁，理由为 %s。' % (fullname, reason))
+    xmpp.send_message(jid, u'你已被本群封禁，理由为 %s。' % reason)
+    xmpp.send_presence(jid, status=u'您已经被本群封禁')
+    log_admin(self.sender, BLOCK % (fullname, reason))
 
   def do_unblock(self, args):
     '''解封某个 ID'''
@@ -864,9 +873,8 @@ class AdminCommand(BasicCommand):
       return
 
     target.delete()
-    send_to_all_except(self.sender.jid,
-                       (u'%s 已被解封禁。' % args[0]) \
-                       .encode('utf-8'))
+    send_to_all((u'%s 已被解封禁。' % args[0]) \
+                .encode('utf-8'))
     log_admin(self.sender, UNBLOCK % args[0])
 
   def do_groupstatus(self, arg):

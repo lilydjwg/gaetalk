@@ -62,4 +62,10 @@
 * nickpattern:	设置昵称显示格式，用 %s 表示昵称的位置
 * prefix:	设置命令前缀
 
+安装与配置
+==========
+1. 修改`app.yaml`文件的第一行，可选地修改下版本名称`version`；
+2. 修改`config.py`文件。**注意**要严格遵循 Python 的语法；
+3. 上传应用到 GAE，添加`appid@appspot.com`为好友即可。
+
 [GAE]:http://code.google.com/appengine/

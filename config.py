@@ -7,7 +7,7 @@ timezoneoffset = 8
 default_prefix = '-'
 # 除了 Unicode 分类为“字母”的字符外，昵称里还允许哪些字符。注意即使指定空白
 # 符昵称中也不能包含之
-allowedSymbolInNick = u'-_@.™'
+allowedSymbolInNick = u'+-_@.™'
 # 是否允许多次更改昵称
 nick_can_change = True
 # 单位是字节。一个汉字为 3 字节

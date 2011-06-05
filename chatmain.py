@@ -7,7 +7,7 @@ from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 
-import lilytalk
+import gaetalk
 import config
 import utils
 
@@ -15,8 +15,8 @@ class XMPPSub(webapp.RequestHandler):
   '''被人加好友了～可能被触发多次'''
   def post(self):
     jid = self.request.get('from')
-    u = lilytalk.get_user_by_jid(jid)
-    lilytalk.try_add_user(jid)
+    u = gaetalk.get_user_by_jid(jid)
+    gaetalk.try_add_user(jid)
 
 class XMPPUnsub(webapp.RequestHandler):
   def post(self):
@@ -25,12 +25,12 @@ class XMPPUnsub(webapp.RequestHandler):
     L = utils.MemLock('delete_user')
     L.require()
     try:
-      u = lilytalk.get_user_by_jid(jid)
+      u = gaetalk.get_user_by_jid(jid)
       if u is not None:
         if u.jid == config.root:
           xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
-        lilytalk.log_onoff(u, lilytalk.LEAVE)
-        lilytalk.send_to_all(u'%s 已经离开' % u.nick)
+        gaetalk.log_onoff(u, gaetalk.LEAVE)
+        gaetalk.send_to_all(u'%s 已经离开' % u.nick)
         u.delete()
         logging.info(u'%s 已经离开' % jid)
     finally:
@@ -40,7 +40,7 @@ class XMPPMsg(webapp.RequestHandler):
   def post(self):
     try:
       message = xmpp.Message(self.request.POST)
-      lilytalk.handle_message(message)
+      gaetalk.handle_message(message)
     except xmpp.InvalidMessageError:
       logging.info('InvalidMessageError: %r' % self.request.POST)
 
@@ -52,54 +52,54 @@ class XMPPAvail(webapp.RequestHandler):
     show = self.request.get('show')
     logging.debug(u'%s 的状态: %s (%s)' % (jid, status, show))
     try:
-      show = lilytalk.STATUS_CODE[show]
+      show = gaetalk.STATUS_CODE[show]
     except KeyError:
       logging.error('%s has sent an incorrect show code %s' % (jid, show))
       return
     try:
-      lilytalk.send_status(self.request.get('from'))
+      gaetalk.send_status(self.request.get('from'))
     except xmpp.Error:
       logging.error('Error while sending presence to %s' % jid)
       return
-    u = lilytalk.get_user_by_jid(jid)
+    u = gaetalk.get_user_by_jid(jid)
     if u is not None:
       modified = False
       if resource not in u.resources:
         u.resources.append(resource)
         modified = True
       if u.avail != show:
-        if u.avail == lilytalk.OFFLINE:
+        if u.avail == gaetalk.OFFLINE:
           u.last_online_date = datetime.datetime.now()
         u.avail = show
         modified = True
       if modified:
-        lilytalk.log_onoff(u, show, resource)
+        gaetalk.log_onoff(u, show, resource)
         u.put()
       if config.warnGtalk105 and resource.startswith('Talk.v105'):
         xmpp.send_message(jid, u'您的客户端使用明文传输数据，为了大家的安全，请使用Gtalk英文版或者其它使用SSL加密的客户端。')
     else:
-      lilytalk.try_add_user(jid, show, resource)
+      gaetalk.try_add_user(jid, show, resource)
 
 class XMPPUnavail(webapp.RequestHandler):
   def post(self):
     jid, resource = self.request.get('from').split('/', 1)
     status = self.request.get('status')
     logging.info(u'%s 下线了' % jid)
-    u = lilytalk.get_user_by_jid(jid)
+    u = gaetalk.get_user_by_jid(jid)
     if u is not None:
       if resource in u.resources:
         u.resources.remove(resource)
         if not u.resources:
-          u.avail = lilytalk.OFFLINE
+          u.avail = gaetalk.OFFLINE
           u.last_offline_date = datetime.datetime.now()
         u.put()
-      lilytalk.log_onoff(u, lilytalk.OFFLINE, resource)
+      gaetalk.log_onoff(u, gaetalk.OFFLINE, resource)
 
 class XMPPProbe(webapp.RequestHandler):
   def post(self):
     fulljid = self.request.get('from')
     try:
-      lilytalk.send_status(self.request.get('from'))
+      gaetalk.send_status(self.request.get('from'))
     except xmpp.Error:
       logging.error('Error while sending presence to %s' % jid)
       return

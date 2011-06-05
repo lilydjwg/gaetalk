@@ -287,8 +287,8 @@ def add_user(jid, show=OFFLINE, resource=''):
   logging.info(u'%s 已经加入' % jid)
   send_to_all_except(jid, u'%s 已经加入' % u.nick)
   send_status(jid)
-  xmpp.send_message(jid, u'欢迎 %s 加入！获取使用帮助，请输入 %shelp' % (
-    u.nick, u.prefix))
+  xmpp.send_message(jid, u'欢迎 %s 加入！要获取使用帮助，请输入 %shelp，要获知群主题，请输入 %stopic。' % (
+    u.nick, u.prefix, u.prefix))
   return u
 
 class BasicCommand:

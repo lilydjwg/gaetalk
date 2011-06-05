@@ -182,7 +182,8 @@ def handle_message(msg):
     msg.reply('系统认为您的客户端正在自动发送离开消息。如果您认为这并不正确，请向管理员反馈。')
     return
   if len(msg.body) > 500:
-    msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。')
+    msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\m'
+             '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
     return
   if sender.is_admin or sender.jid == config.root:
     ch = AdminCommand(msg, sender)

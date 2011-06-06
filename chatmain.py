@@ -25,14 +25,7 @@ class XMPPUnsub(webapp.RequestHandler):
     L = utils.MemLock('delete_user')
     L.require()
     try:
-      u = gaetalk.get_user_by_jid(jid)
-      if u is not None:
-        if u.jid == config.root:
-          xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
-        gaetalk.log_onoff(u, gaetalk.LEAVE)
-        gaetalk.send_to_all(u'%s 已经离开' % u.nick)
-        u.delete()
-        logging.info(u'%s 已经离开' % jid)
+      gaetalk.del_user(jid)
     finally:
       L.release()
 

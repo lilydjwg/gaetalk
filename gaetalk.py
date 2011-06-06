@@ -285,7 +285,6 @@ def add_user(jid, show=OFFLINE, resource=''):
   u.put()
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
-  send_to_all_except(jid, u'%s 已经加入' % u.nick)
   send_status(jid)
   xmpp.send_message(jid, u'欢迎 %s 加入！要获取使用帮助，请输入 %shelp，要获知群主题，请输入 %stopic。' % (
     u.nick, u.prefix, u.prefix))
@@ -298,10 +297,8 @@ def del_user(jid, by_cmd=False):
       xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
     log_onoff(u, LEAVE)
     if by_cmd:
-      send_to_all(u'%s 已经离开 (通过使用命令)' % u.nick)
       logging.info(u'%s (%s) 已经离开 (通过使用命令)' % (u.nick, u.jid))
     else:
-      send_to_all(u'%s 已经离开' % u.nick)
       logging.info(u'%s (%s) 已经离开' % (u.nick, u.jid))
     u.delete()
 

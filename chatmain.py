@@ -15,7 +15,6 @@ class XMPPSub(webapp.RequestHandler):
   '''被人加好友了～可能被触发多次'''
   def post(self):
     jid = self.request.get('from')
-    u = gaetalk.get_user_by_jid(jid)
     gaetalk.try_add_user(jid)
 
 class XMPPUnsub(webapp.RequestHandler):
@@ -76,7 +75,6 @@ class XMPPAvail(webapp.RequestHandler):
 class XMPPUnavail(webapp.RequestHandler):
   def post(self):
     jid, resource = self.request.get('from').split('/', 1)
-    status = self.request.get('status')
     logging.info(u'%s 下线了' % jid)
     u = gaetalk.get_user_by_jid(jid)
     if u is not None:
@@ -92,10 +90,9 @@ class XMPPProbe(webapp.RequestHandler):
   def post(self):
     fulljid = self.request.get('from')
     try:
-      gaetalk.send_status(self.request.get('from'))
+      gaetalk.send_status(fulljid)
     except xmpp.Error:
-      logging.error('Error while sending presence to %s' % jid)
-      return
+      logging.error('Error while sending presence to %s' % fulljid)
 
 class XMPPDummy(webapp.RequestHandler):
   def post(self):

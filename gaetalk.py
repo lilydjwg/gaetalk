@@ -132,8 +132,10 @@ def get_member_list():
   now = datetime.datetime.now()
   #一个查询中最多只能有一个不等比较
   l = User.gql('where avail != :1', OFFLINE)
+  # Is this necessary? {{{
   for u in l:
     r.append(u)
+  # }}}
   return [unicode(x.jid) for x in r \
           if x.snooze_before is None or x.snooze_before < now]
 

@@ -281,10 +281,12 @@ def try_add_user(jid, show=OFFLINE, resource=''):
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
   nick = jid.split('@')[0]
+  # XXX: Is this necessary? {{{
   old = get_user_by_nick(nick)
   while old:
     nick += '_'
     old = get_user_by_nick(nick)
+  # }}}
   u = User(jid=jid.lower(), avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()

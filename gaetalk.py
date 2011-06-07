@@ -486,7 +486,8 @@ class BasicCommand:
         for c, f in b.__dict__.items():
           if c.startswith('do_'):
             if arg is None:
-              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8').split(u'，', 1)[0].split(u'。', 1)[0]))
+              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')
+                                         .split(u'，', 1)[0].split(u'。', 1)[0]))
             else:
               doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
       doc.sort()

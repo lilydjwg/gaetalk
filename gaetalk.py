@@ -372,7 +372,7 @@ class BasicCommand:
     for u in l:
       m = u.nick
       status = u.avail
-      if status != u'在线':
+      if status != ONLINE:
         m += u' (%s)' % status
       if u.snooze_before is not None and u.snooze_before > now:
         m += u' (snoozing)'

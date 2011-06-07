@@ -285,11 +285,22 @@ def add_user(jid, show=OFFLINE, resource=''):
   u.put()
   log_onoff(u, NEW)
   logging.info(u'%s 已经加入' % jid)
-  send_to_all_except(jid, u'%s 已经加入' % u.nick)
   send_status(jid)
   xmpp.send_message(jid, u'欢迎 %s 加入！要获取使用帮助，请输入 %shelp，要获知群主题，请输入 %stopic。' % (
     u.nick, u.prefix, u.prefix))
   return u
+
+def del_user(jid, by_cmd=False):
+  l = User.gql('where jid = :1', jid.lower())
+  for u in l:
+    if u.jid == config.root:
+      xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
+    log_onoff(u, LEAVE)
+    if by_cmd:
+      logging.info(u'%s (%s) 已经离开 (通过使用命令)' % (u.nick, u.jid))
+    else:
+      logging.info(u'%s (%s) 已经离开' % (u.nick, u.jid))
+    u.delete()
 
 class BasicCommand:
   handled = True
@@ -664,13 +675,8 @@ class BasicCommand:
 
   def do_quit(self, args):
     '''删除用户数据。某些自称“不作恶”的公司的客户端会不按协议要求发送删除好友的消息，请 gtalk 官方客户端用户使用此命令退出。参见 http://xmpp.org/rfcs/rfc3921.html#rfc.section.6.3 。'''
-    u = self.sender
-    if u.jid == config.root:
-      xmpp.send_message(jid, u'root 用户：离开前请确定你已做好善后工作！')
-    log_onoff(u, LEAVE)
-    send_to_all(u'%s 已经离开 (通过使用命令)' % u.nick)
-    u.delete()
-    logging.info(u'%s (%s) 已经离开 (通过使用命令)' % (u.nick, u.jid))
+    del_user(self.sender.jid)
+    self.msg.reply(u'OK.')
 
   def set_prefix(self, arg):
     '''设置命令前缀'''

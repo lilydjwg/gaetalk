@@ -328,6 +328,10 @@ class BasicCommand:
     else:
       self.handled = False
 
+  def get_msg_part(self, index):
+    '''返回消息中第 index 个单词及其后的所有字符'''
+    return self.msg.body[len(self.sender.prefix):].split(None, index)[-1]
+
   def do_online(self, args):
     '''在线成员列表。可带一个参数，指定在名字中出现的一个子串。'''
     r = []
@@ -540,8 +544,7 @@ class BasicCommand:
       self.msg.reply('很抱歉，对方不接收私信。')
       return
 
-    # can't use args as the message may contain whitespaces
-    msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
+    msg = self.get_msg_part(2)
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
     if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
       self.msg.reply(u'OK')
@@ -554,8 +557,7 @@ class BasicCommand:
       self.msg.reply('请给出自我介绍的内容。')
       return
 
-    # can't use args as the message may contain whitespaces
-    msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
+    msg = self.get_msg_part(1)
     u = self.sender
     try:
       u.intro = msg

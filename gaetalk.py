@@ -548,6 +548,7 @@ class BasicCommand:
       self.msg.reply('很抱歉，对方不接收私信。')
       return
 
+    # Why not use args[1] ?
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
     if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:

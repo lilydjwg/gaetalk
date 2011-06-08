@@ -562,6 +562,7 @@ class BasicCommand:
       self.msg.reply('请给出自我介绍的内容。')
       return
 
+    # As do_m, why not use arg?
     msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
     u = self.sender
     try:

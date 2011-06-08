@@ -132,8 +132,10 @@ def get_member_list():
   now = datetime.datetime.now()
   #一个查询中最多只能有一个不等比较
   l = User.gql('where avail != :1', OFFLINE)
+  # Is this necessary? {{{
   for u in l:
     r.append(u)
+  # }}}
   return [unicode(x.jid) for x in r \
           if x.snooze_before is None or x.snooze_before < now]
 
@@ -154,8 +156,7 @@ def send_to_all(message):
   xmpp.send_message(jids, message)
 
 def send_status(jid):
-  u = get_blocked_user(jid)
-  if u is not None:
+  if get_blocked_user(jid):
     xmpp.send_presence(jid, status=u'您已经被本群封禁')
     return
 
@@ -167,28 +168,35 @@ def send_status(jid):
 
 def handle_message(msg):
   jid = msg.sender.split('/')[0]
+
   sender = get_blocked_user(jid)
   if sender is not None:
     msg.reply(u'您已经被本群封禁，原因为 %s。' % sender.reason)
     return
+
   sender = get_user_by_jid(jid)
   if sender is None:
     msg.reply('很抱歉，出错了，请尝试更改状态或者重新添加好友。')
     return
+
   if msg.body.startswith('?OTR:'):
     msg.reply('不支持 OTR 加密！')
     return
+
   if msg.body in config.blocked_away_messages:
     msg.reply('系统认为您的客户端正在自动发送离开消息。如果您认为这并不正确，请向管理员反馈。')
     return
+
   if len(msg.body) > 500:
     msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\m'
              '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
     return
+
   if sender.is_admin or sender.jid == config.root:
     ch = AdminCommand(msg, sender)
   else:
     ch = BasicCommand(msg, sender)
+
   if not ch.handled:
     now = datetime.datetime.now()
     if sender.black_before is not None \
@@ -273,10 +281,12 @@ def try_add_user(jid, show=OFFLINE, resource=''):
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
   nick = jid.split('@')[0]
+  # XXX: Is this necessary? {{{
   old = get_user_by_nick(nick)
   while old:
     nick += '_'
     old = get_user_by_nick(nick)
+  # }}}
   u = User(jid=jid.lower(), avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()
@@ -337,7 +347,7 @@ class BasicCommand:
       if pat and m.find(pat) == -1:
         continue
       status = u.avail
-      if status != u'在线':
+      if status != ONLINE:
         m += u' (%s)' % status
       if u.snooze_before is not None and u.snooze_before > now:
         m += u' (snoozing)'
@@ -362,7 +372,7 @@ class BasicCommand:
     for u in l:
       m = u.nick
       status = u.avail
-      if status != u'在线':
+      if status != ONLINE:
         m += u' (%s)' % status
       if u.snooze_before is not None and u.snooze_before > now:
         m += u' (snoozing)'
@@ -476,7 +486,8 @@ class BasicCommand:
         for c, f in b.__dict__.items():
           if c.startswith('do_'):
             if arg is None:
-              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8').split(u'，', 1)[0].split(u'。', 1)[0]))
+              doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8').\
+                                         split(u'，', 1)[0].split(u'。', 1)[0]))
             else:
               doc.append(u'%s%s:\t%s' % (prefix, c[3:], f.__doc__.decode('utf-8')))
       doc.sort()
@@ -537,6 +548,7 @@ class BasicCommand:
       self.msg.reply('很抱歉，对方不接收私信。')
       return
 
+    # Why not use args[1] ?
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
     if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
@@ -550,6 +562,7 @@ class BasicCommand:
       self.msg.reply('请给出自我介绍的内容。')
       return
 
+    # As do_m, why not use arg?
     msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
     u = self.sender
     try:

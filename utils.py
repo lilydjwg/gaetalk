@@ -71,6 +71,7 @@ def checkNick(nick):
   if len(nick.encode('utf-8')) > config.nick_maxlen:
     return False
   for i in nick:
+    # Range is too large, should exclude Lm and Lt
     if not unicodedata.category(i).startswith('L') and i not in config.allowedSymbolInNick:
       return False
   return True

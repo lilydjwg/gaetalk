@@ -567,8 +567,6 @@ class BasicCommand:
       return
 
     u.put()
-    send_to_all_except(u.jid,
-      (u'%s 的新自我介绍：%s' % (u.nick, msg)).encode('utf-8'))
     self.msg.reply(u'设置成功！')
 
   def do_snooze(self, args):

@@ -711,7 +711,8 @@ class BasicCommand:
 
   def set_allowpm(self, arg):
     '''设置是否接收私信，参数为 y（接收）或者 n（拒绝）'''
-    if arg not in 'yn':
+    # Allow uppercase
+    if arg.lower() not in 'yn':
       self.msg.reply(u'错误的参数。')
       return
 

@@ -394,7 +394,7 @@ class BasicCommand:
   def do_chatty(self, args):
     '''消息数排行'''
     r = []
-    for u in User.gql('ORDER BY msg_chars ASC'):
+    for u in User.gql('ORDER BY msg_count ASC'):
       m = u.nick
       m = u'* %s:\t%5d条，共 %s' % (
         u.nick, u.msg_count,

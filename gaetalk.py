@@ -128,15 +128,10 @@ def get_blocked_user(jid):
   return BlockedUser.gql('where jid = :1', jid.lower()).get()
 
 def get_member_list():
-  r = []
   now = datetime.datetime.now()
   #一个查询中最多只能有一个不等比较
   l = User.gql('where avail != :1', OFFLINE)
-  # Is this necessary? {{{
-  for u in l:
-    r.append(u)
-  # }}}
-  return [unicode(x.jid) for x in r \
+  return [unicode(x.jid) for x in l \
           if x.snooze_before is None or x.snooze_before < now]
 
 def send_to_all_except(jid, message):
@@ -281,12 +276,9 @@ def try_add_user(jid, show=OFFLINE, resource=''):
 def add_user(jid, show=OFFLINE, resource=''):
   '''resource 在 presence type 为 available 里使用'''
   nick = jid.split('@')[0]
-  # XXX: Is this necessary? {{{
-  old = get_user_by_nick(nick)
-  while old:
+  # same user name with different domains are possible
+  while get_user_by_nick(nick):
     nick += '_'
-    old = get_user_by_nick(nick)
-  # }}}
   u = User(jid=jid.lower(), avail=show, nick=nick)
   if show != OFFLINE:
     u.last_online_date = datetime.datetime.now()
@@ -548,7 +540,7 @@ class BasicCommand:
       self.msg.reply('很抱歉，对方不接收私信。')
       return
 
-    # Why not use args[1] ?
+    # can't use args as the message may contain whitespaces
     msg = self.msg.body[len(self.sender.prefix):].split(None, 2)[-1]
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
     if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
@@ -562,7 +554,7 @@ class BasicCommand:
       self.msg.reply('请给出自我介绍的内容。')
       return
 
-    # As do_m, why not use arg?
+    # can't use args as the message may contain whitespaces
     msg = self.msg.body[len(self.sender.prefix):].split(None, 1)[-1]
     u = self.sender
     try:

@@ -585,7 +585,7 @@ class BasicCommand:
     if n == 0:
       self.msg.reply('你已经醒来。')
     else:
-      self.msg.reply('OK，停止接收消息 %s。' % utils.displayTime(n))
+      self.msg.reply(u'OK，停止接收消息 %s。' % utils.displayTime(n))
     log_onoff(self.sender, SNOOZE % n)
 
   def do_offline(self, args):
@@ -753,7 +753,7 @@ class AdminCommand(BasicCommand):
 
     target.black_before = datetime.datetime.now() + datetime.timedelta(seconds=n)
     target.put()
-    self.msg.reply((u'OK，禁言 %s %s。' % (target.nick, utils.displayTime(n))).encode('utf-8'))
+    self.msg.reply(u'OK，禁言 %s %s。' % (target.nick, utils.displayTime(n)))
     send_to_all_except((self.sender.jid, target.jid),
                        (u'%s 已被禁言 %s。' % (target.nick, utils.displayTime(n))) \
                        .encode('utf-8'))

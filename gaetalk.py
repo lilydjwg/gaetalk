@@ -4,9 +4,11 @@
 import re
 import logging
 import datetime
+import urllib
 
 from google.appengine.ext import db
 from google.appengine.api import xmpp
+from google.appengine.api import urlfetch
 
 import utils
 import config
@@ -183,16 +185,26 @@ def handle_message(msg):
     return
 
   if len(msg.body) > 500:
-    msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\m'
-             '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
-    return
-
-  if sender.is_admin or sender.jid == config.root:
-    ch = AdminCommand(msg, sender)
+    try:
+      form_data = urllib.urlencode({ 'sprunge': msg.body.encode('utf-8') })
+      result = urlfetch.fetch(url='http://paste.vim-cn.vv.cc/',
+                          payload=form_data,
+                          method=urlfetch.POST,
+                          headers={'Content-Type': 'application/x-www-form-urlencoded'})
+      msgbody = result.content.strip()
+      msg.reply(u'内容过长，已贴至 %s' % msgbody)
+    except urlfetch.DownloadError:
+      msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'
+                '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
+    ch = None
   else:
-    ch = BasicCommand(msg, sender)
+    msgbody = msg.body
+    if sender.is_admin or sender.jid == config.root:
+      ch = AdminCommand(msg, sender)
+    else:
+      ch = BasicCommand(msg, sender)
 
-  if not ch.handled:
+  if not ch or not ch.handled:
     now = datetime.datetime.now()
     if sender.black_before is not None \
        and sender.black_before > now:
@@ -232,12 +244,12 @@ def handle_message(msg):
     sender.snooze_before = None
     try:
       sender.msg_count += 1
-      sender.msg_chars += len(msg.body)
+      sender.msg_chars += len(msgbody)
     except TypeError:
       sender.msg_count = 1
-      sender.msg_chars = len(msg.body)
+      sender.msg_chars = len(msgbody)
     sender.put()
-    body = utils.removelinks(msg.body)
+    body = utils.removelinks(msgbody)
     for u in User.gql('where avail != :1', OFFLINE):
       if u.snooze_before is not None and u.snooze_before >= now:
         continue
@@ -251,7 +263,7 @@ def handle_message(msg):
         xmpp.send_message(u.jid, message)
       except xmpp.InvalidJidError:
         pass
-    log_msg(sender, msg.body)
+    log_msg(sender, msgbody)
 
 def try_add_user(jid, show=OFFLINE, resource=''):
   '''使用 memcache 作为锁添加用户'''

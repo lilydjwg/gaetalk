@@ -875,12 +875,17 @@ class AdminCommand(BasicCommand):
       jid = target.jid
       name = target.nick
       fullname = '%s (%s)' % (name, jid)
-      target.delete()
     u = BlockedUser.gql('where jid = :1', jid).get()
     if u is not None:
       self.msg.reply(u'此 JID 已经被封禁。')
       return
 
+    if jid == config.root:
+      self.msg.reply('不能封禁 root 用户')
+      return
+
+    if target:
+      target.delete()
     u = BlockedUser(jid=jid, reason=reason)
     u.put()
 

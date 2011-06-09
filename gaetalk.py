@@ -888,7 +888,7 @@ class AdminCommand(BasicCommand):
       return
 
     target.delete()
-    send_to_all((u'%s 已被解封禁。' % args[0]) \
+    send_to_all((u'%s 已被解除封禁。' % args[0]) \
                 .encode('utf-8'))
     log_admin(self.sender, UNBLOCK % args[0])
 

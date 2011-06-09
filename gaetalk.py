@@ -194,6 +194,7 @@ def handle_message(msg):
       msgbody = result.content.strip()
       msg.reply(u'内容过长，已贴至 %s' % msgbody)
     except urlfetch.DownloadError:
+      log.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
       msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'
                 '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
     ch = None

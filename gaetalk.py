@@ -184,9 +184,12 @@ def handle_message(msg):
     msg.reply('系统认为您的客户端正在自动发送离开消息。如果您认为这并不正确，请向管理员反馈。')
     return
 
-  if len(msg.body) > 500:
+  if len(msg.body) > 500 or msg.body.count('\n') > 5:
     try:
-      form_data = urllib.urlencode({ 'sprunge': msg.body.encode('utf-8') })
+      form_data = urllib.urlencode({
+        'sprunge': msg.body.encode('utf-8'),
+        # 'lang': 'auto',
+      })
       result = urlfetch.fetch(url='http://paste.vim-cn.vv.cc/',
                           payload=form_data,
                           method=urlfetch.POST,
@@ -194,7 +197,7 @@ def handle_message(msg):
       msgbody = result.content.strip()
       msg.reply(u'内容过长，已贴至 %s' % msgbody)
     except urlfetch.DownloadError:
-      log.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
+      logging.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
       msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'
                 '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
     ch = None

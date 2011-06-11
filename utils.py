@@ -5,8 +5,10 @@ import re
 import unicodedata
 import time
 import config
+import urllib
 
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 
 timeParser = re.compile(r'^(\d+)([smhd])?$')
 linkre = re.compile(r' <https?://(?!i.imgur.com/)[^>]+>')
@@ -97,3 +99,18 @@ class MemLock:
 
   def release(self):
     memcache.set(self.name, False)
+
+def post_code(msg):
+  '''将代码贴到网站，返回 URL 地址 或者 None（失败）'''
+  form_data = urllib.urlencode({
+    'sprunge': msg.encode('utf-8'),
+    'lang': 'auto',
+  })
+  try:
+    result = urlfetch.fetch(url='http://paste.vim-cn.vv.cc/',
+        payload=form_data,
+        method=urlfetch.POST,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    return result.content.strip()
+  except urlfetch.DownloadError:
+    return

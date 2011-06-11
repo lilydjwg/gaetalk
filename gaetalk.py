@@ -4,11 +4,9 @@
 import re
 import logging
 import datetime
-import urllib
 
 from google.appengine.ext import db
 from google.appengine.api import xmpp
-from google.appengine.api import urlfetch
 
 import utils
 import config
@@ -185,21 +183,14 @@ def handle_message(msg):
     return
 
   if len(msg.body) > 500 or msg.body.count('\n') > 5:
-    try:
-      form_data = urllib.urlencode({
-        'sprunge': msg.body.encode('utf-8'),
-        # 'lang': 'auto',
-      })
-      result = urlfetch.fetch(url='http://paste.vim-cn.vv.cc/',
-                          payload=form_data,
-                          method=urlfetch.POST,
-                          headers={'Content-Type': 'application/x-www-form-urlencoded'})
-      msgbody = result.content.strip()
+    msgbody = utils.post_code(msg.body)
+    if msgbody:
       msg.reply(u'内容过长，已贴至 %s' % msgbody)
-    except urlfetch.DownloadError:
+    else:
       logging.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
       msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'
-                '如 http://paste.ubuntu.org.cn/ http://slexy.org/')
+                '如 http://paste.ubuntu.org.cn/ http://slexy.org/\n'
+                'PS: 自动转贴失败！')
       return
     ch = None
   else:

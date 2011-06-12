@@ -615,12 +615,17 @@ class BasicCommand:
       try:
         self.sender.resources.remove('fakeresouce')
         self.msg.reply('OK，fakeresouce 已取消。')
+        self.sender.put()
       except ValueError:
         self.msg.reply('没有设置 fakeresouce。')
     else:
-      self.sender.resources.append('fakeresouce')
-      self.msg.reply('OK，你将永远在线。')
-    self.sender.put()
+      try:
+        self.sender.resources.index('fakeresouce')
+        self.msg.reply('你已经设置了永远在线。')
+      except ValueError:
+        self.sender.resources.append('fakeresouce')
+        self.msg.reply('OK，你将永远在线。')
+        self.sender.put()
 
   def do_old(self, args):
     '''聊天记录查询，可选一个数字参数。默认为最后20条。特殊参数 OFFLINE （不区分大小写）显示离线消息（最多 100 条）'''

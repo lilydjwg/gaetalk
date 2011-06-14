@@ -9,6 +9,9 @@ handlers:
 - url: /_admin/userdedup
   script: usermaintainer.py
   login: admin
+- url: /_admin/stat
+  script: stat.py
+  login: admin
 - url: /
   static_files: README.html
   upload: README.html

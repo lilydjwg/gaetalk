@@ -107,7 +107,7 @@ def post_code(msg):
     'lang': 'auto',
   })
   try:
-    result = urlfetch.fetch(url='http://paste.vim-cn.vv.cc/',
+    result = urlfetch.fetch(url='http://paste.vim-cn.co.cc/',
         payload=form_data,
         method=urlfetch.POST,
         headers={'Content-Type': 'application/x-www-form-urlencoded'})

@@ -103,11 +103,10 @@ class MemLock:
 def post_code(msg):
   '''将代码贴到网站，返回 URL 地址 或者 None（失败）'''
   form_data = urllib.urlencode({
-    'sprunge': msg.encode('utf-8'),
-    'lang': 'auto',
+    'vimcn': msg.encode('utf-8'),
   })
   try:
-    result = urlfetch.fetch(url='http://paste.vim-cn.co.cc/',
+    result = urlfetch.fetch(url='http://p.vim-cn.com/',
         payload=form_data,
         method=urlfetch.POST,
         headers={'Content-Type': 'application/x-www-form-urlencoded'})

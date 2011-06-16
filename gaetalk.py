@@ -185,7 +185,7 @@ def handle_message(msg):
   if len(msg.body) > 500 or msg.body.count('\n') > 5:
     msgbody = utils.post_code(msg.body)
     if msgbody:
-      msg.reply(u'内容过长，已贴至 %s' % msgbody)
+      msg.reply(u'内容过长，已贴至 %s 。在其后附加 “/lang”来查看语法高亮版' % msgbody)
     else:
       logging.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
       msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'

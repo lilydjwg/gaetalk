@@ -1,6 +1,9 @@
 #!/usr/bin/env python2
 # vim:fileencoding=utf-8
 
+import urllib
+from google.appengine.api import urlfetch
+
 # 时区
 timezoneoffset = 8
 # 默认的命令前缀
@@ -23,3 +26,17 @@ appid = 'lilydjwg'
 blocked_away_messages = (
   "I'm currently away and will reply as soon as I return to eBuddy on my iPod touch",
 )
+
+def post_code(msg):
+  '''将代码贴到网站，返回 URL 地址 或者 None（失败）'''
+  form_data = urllib.urlencode({
+    'vimcn': msg.encode('utf-8'),
+  })
+  try:
+    result = urlfetch.fetch(url='http://p.vim-cn.com/',
+        payload=form_data,
+        method=urlfetch.POST,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    return result.content.strip()
+  except urlfetch.DownloadError:
+    return

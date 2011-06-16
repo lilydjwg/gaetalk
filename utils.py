@@ -100,16 +100,3 @@ class MemLock:
   def release(self):
     memcache.set(self.name, False)
 
-def post_code(msg):
-  '''将代码贴到网站，返回 URL 地址 或者 None（失败）'''
-  form_data = urllib.urlencode({
-    'vimcn': msg.encode('utf-8'),
-  })
-  try:
-    result = urlfetch.fetch(url='http://p.vim-cn.com/',
-        payload=form_data,
-        method=urlfetch.POST,
-        headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    return result.content.strip()
-  except urlfetch.DownloadError:
-    return

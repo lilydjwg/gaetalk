@@ -213,29 +213,6 @@ def handle_message(msg):
                 + (sender.black_before+timezone).strftime(format))
       return
 
-    if sender.last_speak_date is not None:
-      d = now - sender.last_speak_date
-      t = d.seconds
-      if d.days > 0 or t > 60:
-        sender.flooding_point = 0
-      else:
-        k = 1000 / (t * t + 1)
-        if k > 0:
-          sender.flooding_point += k
-        else:
-          sender.flooding_point = 0
-
-        k = sender.flooding_point / 1500
-        if k > 0:
-          msg.reply('刷屏啊？禁言 %d 分钟！' % k)
-          send_to_all_except(sender.jid,
-            (u'%s 已因刷屏而被禁言 %d 分钟。' % (sender.nick, k)) \
-                                  .encode('utf-8'))
-          log_onoff(sender, BLACK_AUTO % (60 * k))
-          sender.black_before = now + datetime.timedelta(seconds=60*k)
-          sender.put()
-          return
-
     sender.last_speak_date = now
     sender.snooze_before = None
     try:

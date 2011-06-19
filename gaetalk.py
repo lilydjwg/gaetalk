@@ -661,8 +661,8 @@ class BasicCommand:
       self.msg.reply(u'\n'.join(doc).encode('utf-8'))
     else:
       msg = self.msg
-      cmd = msg.body.split(None, 1)[1].split('=', 1)
-      if len(cmd) == 1:
+      cmd = args[0].split('=', 1)
+      if len(cmd) == 1 or cmd[1] == '':
         msg.reply(u'错误：请给出选项值')
         return
       try:

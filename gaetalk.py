@@ -532,10 +532,7 @@ class BasicCommand:
 
     msg = self.get_msg_part(2)
     msg = u'_私信_ %s %s' % (target.nick_pattern % self.sender.nick, msg)
-    if xmpp.send_message(target.jid, msg) == xmpp.NO_ERROR:
-      self.msg.reply(u'OK')
-    else:
-      self.msg.reply(u'消息发送失败')
+    xmpp.send_message(target.jid, msg)
 
   def do_intro(self, arg):
     '''设置自我介绍信息'''

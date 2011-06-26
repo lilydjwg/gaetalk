@@ -187,6 +187,10 @@ def handle_message(msg):
     if msgbody:
       msgbody += '/text' # 默认当作纯文本高亮
       msg.reply(u'内容过长，已贴至 %s 。' % msgbody)
+      firstline = msg.body.split('\n')[0]
+      if len(firstline) > 40:
+        firstline = firstline[:40]
+      msgbody += '\n' + firstline + '...'
     else:
       logging.warn(u'贴代码失败，代码长度 %d' % len(msg.body))
       msg.reply('由于技术限制，每条消息最长为 500 字。大段文本请贴 paste 网站。\n'

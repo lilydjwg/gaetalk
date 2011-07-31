@@ -62,7 +62,6 @@ class User(db.Model):
 
   black_before = db.DateTimeProperty(auto_now_add=True)
   snooze_before = db.DateTimeProperty()
-  flooding_point = db.IntegerProperty(default=0)
 
   avail = db.StringProperty(required=True)
   is_admin = db.BooleanProperty(required=True, default=False)

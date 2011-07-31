@@ -1,0 +1,6 @@
+queue:
+- name: userunavailable
+  rate: 1/s
+  retry_parameters:
+    task_retry_limit: 10
+    task_age_limit: 1d

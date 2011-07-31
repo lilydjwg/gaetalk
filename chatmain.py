@@ -6,6 +6,7 @@ import datetime
 from google.appengine.api import xmpp
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.api import taskqueue
 
 import gaetalk
 import config
@@ -76,15 +77,7 @@ class XMPPUnavail(webapp.RequestHandler):
   def post(self):
     jid, resource = self.request.get('from').split('/', 1)
     logging.info(u'%s 下线了' % jid)
-    u = gaetalk.get_user_by_jid(jid)
-    if u is not None:
-      if resource in u.resources:
-        u.resources.remove(resource)
-        if not u.resources:
-          u.avail = gaetalk.OFFLINE
-          u.last_offline_date = datetime.datetime.now()
-        u.put()
-      gaetalk.log_onoff(u, gaetalk.OFFLINE, resource)
+    taskqueue.add(url='/_admin/queue', queue_name='userunavailable', params={'jid': jid, 'resource': resource})
 
 class XMPPProbe(webapp.RequestHandler):
   def post(self):
@@ -98,6 +91,20 @@ class XMPPDummy(webapp.RequestHandler):
   def post(self):
     pass
 
+class UserUnavailable(webapp.RequestHandler):
+  def post(self):
+    jid = self.request.get('jid')
+    resource = self.request.get('resource')
+    u = gaetalk.get_user_by_jid(jid)
+    if u is not None:
+      if resource in u.resources:
+        u.resources.remove(resource)
+        if not u.resources:
+          u.avail = gaetalk.OFFLINE
+          u.last_offline_date = datetime.datetime.now()
+        u.put()
+      gaetalk.log_onoff(u, gaetalk.OFFLINE, resource)
+
 application = webapp.WSGIApplication(
   [
     ('/_ah/xmpp/subscription/subscribed/', XMPPSub),
@@ -108,6 +115,7 @@ application = webapp.WSGIApplication(
     ('/_ah/xmpp/presence/probe/', XMPPProbe),
     ('/_ah/xmpp/subscription/subscribe/', XMPPDummy),
     ('/_ah/xmpp/subscription/unsubscribe/', XMPPDummy),
+    ('/_admin/queue', UserUnavailable),
   ],
   debug=True)
 

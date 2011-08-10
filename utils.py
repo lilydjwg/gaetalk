@@ -75,7 +75,7 @@ def checkNick(nick):
   for i in nick:
     cat = unicodedata.category(i)
     # Lt & Lm are special chars
-    if (not cat.startswith('L') or cat in ('Lm', 'Lt')) \
+    if (not (cat.startswith('L') or cat.startswith('N')) or cat in ('Lm', 'Lt')) \
        and i not in config.allowedSymbolInNick:
       return False
   return True

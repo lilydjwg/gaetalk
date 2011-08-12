@@ -2,6 +2,9 @@ cron:
 - description: user deduplicate
   url: /_admin/userdedup
   schedule: every 24 hours
+- description: user deactive
+  url: /_admin/userdeactive
+  schedule: every 2 hours
 - description: xmpp stanzas stat
   url: /_admin/stat
   schedule: every 1 hours

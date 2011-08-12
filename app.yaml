@@ -6,7 +6,7 @@ api_version: 1
 handlers:
 - url: /_ah/xmpp/.*
   script: chatmain.py
-- url: /_admin/userdedup
+- url: /_admin/user.*
   script: usermaintainer.py
   login: admin
 - url: /_admin/stat

@@ -3,8 +3,23 @@
 
 import gaetalk
 import logging
+import datetime
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.api import xmpp
+
+class Userdeactive(webapp.RequestHandler):
+  def get(self):
+    for u in gaetalk.User.all():
+      if u.jid.endswith('@gmail.com'):
+        if u.avail != gaetalk.OFFLINE and 'fakeresouce' not in u.resources:
+          if not xmpp.get_presence(u.jid):
+            del u.resources[:]
+            u.avail = gaetalk.OFFLINE
+            u.last_offline_date = datetime.datetime.now()
+            u.put()
+            self.response.out.write(u.jid + 'should be offline.\n')
+    self.response.out.write(u'OK.'.encode('utf-8'))
 
 class Userdedup(webapp.RequestHandler):
   def get(self):
@@ -29,6 +44,7 @@ class Userdedup(webapp.RequestHandler):
 application = webapp.WSGIApplication(
   [
     ('/_admin/userdedup', Userdedup),
+    ('/_admin/userdeactive', Userdeactive),
   ],
   debug=True)
 

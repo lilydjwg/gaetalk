@@ -223,6 +223,17 @@ def handle_message(msg):
                 + (sender.black_before+timezone).strftime(format))
       return
 
+    # handles ping, which does the following:
+    # - tells the user the network and the bot are OK
+    # - undoes snoozing
+    # - tells a previously 'quieted' person if s/he can speak now
+    if msgbody == 'ping':
+      if sender.snooze_before:
+        sender.snooze_before = None
+        self.put()
+      msg.reply('pong')
+      return
+
     sender.last_speak_date = now
     sender.snooze_before = None
     try:

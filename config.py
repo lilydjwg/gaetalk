@@ -38,6 +38,6 @@ def post_code(msg):
         payload=form_data,
         method=urlfetch.POST,
         headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    return result.content.strip()
+    return result.content.strip() + '/text' # 默认当作纯文本高亮
   except urlfetch.DownloadError:
     return

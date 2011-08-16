@@ -184,7 +184,6 @@ def handle_message(msg):
   if len(msg.body) > 500 or msg.body.count('\n') > 5:
     msgbody = config.post_code(msg.body)
     if msgbody:
-      msgbody += '/text' # 默认当作纯文本高亮
       msg.reply(u'内容过长，已贴至 %s 。' % msgbody)
       firstline = ''
       lineiter = iter(msg.body.split('\n'))

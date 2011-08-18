@@ -229,7 +229,7 @@ def handle_message(msg):
     if msgbody == 'ping':
       if sender.snooze_before:
         sender.snooze_before = None
-        self.put()
+        sender.put()
       msg.reply('pong')
       return
 

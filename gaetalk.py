@@ -233,6 +233,13 @@ def handle_message(msg):
       msg.reply('pong')
       return
 
+    if msgbody.lower() in ('test', u'测试'):
+      if sender.snooze_before:
+        sender.snooze_before = None
+        sender.put()
+      msg.reply('test ok')
+      return
+
     sender.last_speak_date = now
     sender.snooze_before = None
     try:

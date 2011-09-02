@@ -26,6 +26,7 @@ appid = 'lilydjwg'
 blocked_away_messages = (
   "I'm currently away and will reply as soon as I return to eBuddy on my iPod touch",
   'This is an autoreply: I am currently not available. Please leave your message, and I will get back to you as soon as possible.',
+  u'你好，我现在有事情不在，一会再和您联系',
 )
 
 def post_code(msg):

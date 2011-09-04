@@ -263,7 +263,7 @@ def handle_message(msg):
         xmpp.send_message(u.jid, message)
       except xmpp.InvalidJidError:
         pass
-    log_msg(sender, msgbody)
+    log_msg(sender, body)
 
 def try_add_user(jid, show=OFFLINE, resource=''):
   '''使用 memcache 作为锁添加用户'''

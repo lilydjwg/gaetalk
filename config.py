@@ -19,8 +19,6 @@ nick_maxlen = 16
 warnGtalk105 = True
 # root 用户，请指定群主的 JID。
 root = 'lilydjwg@gmail.com'
-# 发统计报告邮件用
-appid = 'lilydjwg'
 
 # 离开时某些客户端自动发送的消息（全文）
 blocked_away_messages = (

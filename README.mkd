@@ -1,6 +1,6 @@
 介绍
 ====
-**gaetalk** 是一个基于[Google App Engine][GAE]的群聊应用，旨在建立一个自由友好的聊天交流平台。目前版本为 **0.3**，正在积极开发中，[最新开发版][github]在 lilydjwg@appspot.com 运行。
+**gaetalk** 是一个基于[Google App Engine][GAE]的群聊应用，旨在建立一个自由友好的聊天交流平台。目前版本为 **0.3**，[最新开发版][github]在 lilydjwg@appspot.com 运行。
 
 特性列表
 ========
